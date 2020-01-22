@@ -14,6 +14,7 @@ def c1(image, number):
     fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
                                   sharex=True, sharey=True)
     ax.imshow(image)
+    ax.axis('off')
     ax2.imshow(countours1, cmap=plt.cm.gray)
     ax2.axis('off')
 
@@ -28,14 +29,23 @@ def c1(image, number):
         Yy = [Ymin, Ymax]
         dst_scipy = distance.euclidean(Xx, Yy)
 
-        dst = (Xmax-Xmin)+(Ymax-Ymin)
-        dst = dst**2
-        dst = math.sqrt(dst)
+        dst = math.pow((Xmin-Xmax),2)+math.pow((Ymax-Ymin),2)
+        # dst = dst**2
+        dst = math.pow(dst, 1/2)
 
-        ax.plot(Ymin, Xmin, marker='o')
-        ax.plot(Ymin, Xmin, marker='o')
+        print("Евклид=", dst)
 
-        print("Евклид=", dst, "//", dst_scipy)
+    #     Находим центроид - неявно
+        dst_p = dst/2
+
+        # X_mean_min = Xmin + dst_p
+        # X_mean_max = Xmax + dst_p
+        #
+        # Y_mean_min = Ymin + dst_p
+        # Y_mean_max = Ymax + dst_p
+
+        ax.plot(Ymax-dst_p, Xmax-dst_p, marker='x')
+
 
 
     for n, countours in enumerate(countours):
