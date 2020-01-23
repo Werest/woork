@@ -18,38 +18,30 @@ def c1(image, number):
     ax2.imshow(countours1, cmap=plt.cm.gray)
     ax2.axis('off')
 
-    for c in countours:
-        Xmin = np.amin(c[:, 0])
-        Xmax = np.amax(c[:, 0])
 
+    for c in countours:
         Ymin = np.amin(c[:, 1])
         Ymax = np.amax(c[:, 1])
 
-        Xx = [Xmin, Xmax]
-        Yy = [Ymin, Ymax]
-        dst_scipy = distance.euclidean(Xx, Yy)
+        Xmin = c[np.where(c[:, 1] == Ymin), 0]
+        Xmax = c[np.where(c[:, 1] == Ymax), 0]
 
-        dst = math.pow((Xmin-Xmax),2)+math.pow((Ymax-Ymin),2)
+        dst = math.pow((Xmax-Xmin),2)+math.pow((Ymax-Ymin),2)
         # dst = dst**2
         dst = math.pow(dst, 1/2)
 
         print("Евклид=", dst)
+        if dst > 32:
 
-    #     Находим центроид - неявно
-        dst_p = dst/2
+            # Находим центроид - неявно
+            dst_p = dst/2
 
-        # X_mean_min = Xmin + dst_p
-        # X_mean_max = Xmax + dst_p
-        #
-        # Y_mean_min = Ymin + dst_p
-        # Y_mean_max = Ymax + dst_p
-
-        ax.plot(Ymax-dst_p, Xmax-dst_p, marker='x')
+            ax.plot(Ymin+dst_p, Xmin+dst_p, marker='x', ms=5)
 
 
 
-    for n, countours in enumerate(countours):
-        ax.plot(countours[:, 1], countours[:, 0], linewidth=2)
+    # for n, countours in enumerate(countours):
+    #     ax.plot(countours[:, 1], countours[:, 0], linewidth=2)
 
     ax.axis('image')
     ax.set_xticks([])
