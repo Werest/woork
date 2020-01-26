@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import pandas as pd
 
 
 # размеры картинки в микронах 1214,6x1214,6 мкм
@@ -11,20 +12,29 @@ def J(x, xc, y, yc, brightness):
     J = math.sqrt(sum)
     return J
 
+
 # условная функция рассчёта евклидово расстояния
 def calc(image):
-    X_c = 10
-    Y_c = 10
+    array_J = np.zeros((image.shape[0], image.shape[1]))
 
-    X_1 = 140
-    Y_1 = 114
+    for i in range(0, image.shape[0]):
+        for j in range(0, image.shape[1]):
+            X_c = i
+            Y_c = j
 
-    brightness_0 = image[X_1, Y_1]
+            X_1 = 140
+            Y_1 = 114
 
-    J_F = J(X_1, X_c, Y_1, Y_c, brightness_0)
-    print(J_F)
+            brightness_0 = image[X_1, Y_1]
+
+            array_J[i, j] = J(X_1, X_c, Y_1, Y_c, brightness_0)
+
+    m_J = np.amin(array_J)
+    print(np.where(array_J == m_J))
+    pd.DataFrame(array_J).to_csv('121.csv', sep=',')
 
     pass
+
 
 def c1(image, number):
     global x0, y0
@@ -41,6 +51,7 @@ def c1(image, number):
     ax2.imshow(image)
     plt.savefig('k/{}'.format(number))
     calc(image)
+
 
 path_img = 'konstantin/2019.10.21 ФИ-65/2019.10.21_actReg/A7 76_ac.png'
 path_img_v = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_5/B5 97_an.png'
