@@ -16,28 +16,34 @@ def J(x, xc, y, yc, brightness):
 # условная функция рассчёта евклидово расстояния
 # cluster_of_points - скопление точек
 def calc(image, index_cluster_of_points):
+    index_cluster_of_points = np.array(index_cluster_of_points)
     array_J = np.zeros((image.shape[0], image.shape[1]))
+
 
     for i in range(0, image.shape[0]):
         for j in range(0, image.shape[1]):
-            for r in range(0, index_cluster_of_points.shape[0]):
-                for u in range(0, index_cluster_of_points.shape[1]):
+            sum_xc_yc = 0.0
+            print(i, "//", j)
+            for r in index_cluster_of_points[0]:
+                for u in index_cluster_of_points[1]:
+                    X_c = i
+                    Y_c = j
 
-            X_c = i
-            Y_c = j
+                    X_1 = r
+                    Y_1 = u
 
-            X_1 = 150
-            Y_1 = 114
+                    brightness_0 = image[X_1, Y_1]
 
-            brightness_0 = image[X_1, Y_1]
+                    sum_xc_yc += math.pow((X_1 - X_c), 2) + math.pow((Y_1 - Y_c), 2) + math.pow((brightness_0 - 1), 2)
 
-            array_J[i, j] = J(X_1, X_c, Y_1, Y_c, brightness_0)
+
+            array_J[i, j] = math.sqrt(sum_xc_yc)
 
     m_J = np.amin(array_J)
-    pd.DataFrame(array_J).to_csv('121.csv', sep=',')
-
     print(np.where(array_J == m_J))
     print(m_J)
+
+
 
     pass
 
