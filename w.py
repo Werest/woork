@@ -12,6 +12,9 @@ def J(x, xc, y, yc, brightness):
     J = math.sqrt(sum)
     return J
 
+def beggin():
+
+    pass
 
 # условная функция рассчёта евклидово расстояния
 # cluster_of_points - скопление точек
@@ -19,29 +22,44 @@ def calc(image, index_cluster_of_points):
     index_cluster_of_points = np.array(index_cluster_of_points)
     array_J = np.zeros((image.shape[0], image.shape[1]))
 
+    x = index_cluster_of_points[0][0]
+    y = index_cluster_of_points[1][0]
 
-    for i in range(0, image.shape[0]):
-        for j in range(0, image.shape[1]):
-            sum_xc_yc = 0.0
-            print(i, "//", j)
-            for r in index_cluster_of_points[0]:
-                for u in index_cluster_of_points[1]:
-                    X_c = i
-                    Y_c = j
+    print(image[x, y])
 
-                    X_1 = r
-                    Y_1 = u
+    uri = []
 
-                    brightness_0 = image[X_1, Y_1]
+    for i in index_cluster_of_points[0]:
+        for j in index_cluster_of_points[1]:
+            brigh = image[i, j]
+            E = math.sqrt(math.pow((i - 140), 2) + math.pow((j - 130), 2) + math.pow((brigh - 1), 2))
+            uri.append(E)
 
-                    sum_xc_yc += math.pow((X_1 - X_c), 2) + math.pow((Y_1 - Y_c), 2) + math.pow((brightness_0 - 1), 2)
+    print(np.argmin(uri))
+    print(np.amin(uri))
 
-
-            array_J[i, j] = math.sqrt(sum_xc_yc)
-
-    m_J = np.amin(array_J)
-    print(np.where(array_J == m_J))
-    print(m_J)
+    # for i in range(0, image.shape[0]):
+    #     for j in range(0, image.shape[1]):
+    #         sum_xc_yc = 0.0
+    #         print(i, "//", j)
+    #         for r in index_cluster_of_points[0]:
+    #             for u in index_cluster_of_points[1]:
+    #                 X_c = i
+    #                 Y_c = j
+    #
+    #                 X_1 = r
+    #                 Y_1 = u
+    #
+    #                 brightness_0 = image[X_1, Y_1]
+    #
+    #                 sum_xc_yc += math.pow((X_1 - X_c), 2) + math.pow((Y_1 - Y_c), 2) + math.pow((brightness_0 - 1), 2)
+    #
+    #
+    #         array_J[i, j] = math.sqrt(sum_xc_yc)
+    #
+    # m_J = np.amin(array_J)
+    # print(np.where(array_J == m_J))
+    # print(m_J)
 
 
 
