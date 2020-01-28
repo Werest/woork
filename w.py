@@ -3,22 +3,40 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from scipy.misc import derivative
 import pandas as pd
 
-
+# + math.pow((y - yc), 2) + math.pow((brightness - 1), 2)
 # размеры картинки в микронах 1214,6x1214,6 мкм
-def J(x, xc, y, yc, brightness):
-    sum = math.pow((x - xc), 2) + math.pow((y - yc), 2) + math.pow((brightness - 1), 2)
-    J = math.sqrt(sum)
-    return J
+def Jx(x):
+    return math.sqrt(math.pow((x - x0), 2))
+# подумать
+def Jy(y):
+    return math.sqrt(math.pow((y - y0), 2))
+
+def Jbt(brightness):
+    return math.sqrt(math.pow((brightness - 1), 2))
 
 def beggin():
-
+    global x0, y0, step
+    x0 = 114
+    y0 = 0
+    step = 0.1
     pass
+
+
+# def new_x_y(xxx, yyy):
+#     xn = xxx - step * derivative(J, xxx)
+#     yn = yyy - step * derivative(J, yyy)
+#     return xn
+
 
 # условная функция рассчёта евклидово расстояния
 # cluster_of_points - скопление точек
 def calc(image, index_cluster_of_points):
+    beggin()
+    print(x0)
+    print("De", derivative(Jx, 200))
     index_cluster_of_points = np.array(index_cluster_of_points)
     array_J = np.zeros((image.shape[0], image.shape[1]))
 
@@ -61,13 +79,10 @@ def calc(image, index_cluster_of_points):
     # print(np.where(array_J == m_J))
     # print(m_J)
 
-
-
     pass
 
 
 def c1(image, number):
-    global x0, y0
     fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
                                   sharex=True, sharey=True)
     ax.axis('on')
@@ -89,8 +104,6 @@ path_img_v = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_5/B5 97
 image = color.rgb2gray(io.imread(path_img))
 image_v = color.rgb2gray(io.imread(path_img_v))
 image = cv2.blur(image, (3, 3))
-x0 = 10
-y0 = 10
 
 print(image.shape)
 c1(image, 50)
