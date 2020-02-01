@@ -9,13 +9,13 @@ import math
 def Ex(x, xc, y, yc):
     first = x - xc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    return first / two
+    return math.sqrt(first / two)
 
 
 def Ey(x, xc, y, yc):
     first = y - yc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    return first / two
+    return math.sqrt(first / two)
 
 
 def c1(image, number):
