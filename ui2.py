@@ -13,15 +13,12 @@ def Ex(x, xc, y, yc, label):
     else:
         first = y - yc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-
-    r = first / two
-    print(first, "//", two, "//", r)
-    result = math.sqrt(r)
-    return result
+    r = first / math.sqrt(two)
+    return r
 
 def c1(image, number):
-    X0 = 0
-    Y0 = 0
+    X0 = 50
+    Y0 = 50
     step = 0.01
     fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
                                   sharex=True, sharey=True)
@@ -30,44 +27,49 @@ def c1(image, number):
 
     ax.imshow(image)
 
-    ind = np.where(image >= 0.9)
+    ind = np.where(image >= 0.91)
 
     X = ind[0]
     Y = ind[1]
 
-    sumEx = 0.0
-    sumEy = 0.0
+    l_x = len(X)
 
-    eps = 0.001
+    eps = 0.01
     d = True
     flag = 0
     iii = 0
     while d:
+        sumEx = 0.0
+        xxx = X0
+        yyy = Y0
         if flag == 0:
-            for j in Y:
-                for i in X:
-                    sumEx = sumEx + Ex(i, X0, j, Y0, label=0)
-            Y0 = X0 - step * sumEx
+            for i in range(0, len(X)):
+                sumEx = sumEx + Ex(X[i], X0, Y[i], Y0, label=0)
+            print(sumEx)
+            X0 = X0 + step * sumEx
             flag = 1
-            # if math.fabs(sumEx) < eps:
-            #     d = False
-            print('Y0', Y0)
+            if int(X0) == int(xxx):
+                d = False
+            print('X0', X0, '//', xxx)
         else:
-            for j in X:
-                for i in Y:
-                    sumEy = sumEy + Ex(i, X0, j, Y0, label=1)
-            X0 = Y0 - step * sumEy
+            for i in range(0, len(X)):
+                sumEx = sumEx + Ex(X[i], X0, Y[i], Y0, label=1)
+            Y0 = Y0 + step * sumEx
+            print(sumEx)
             flag = 0
-            # if math.fabs(sumEy) < eps:
-            #     d = False
-            print('X0', X0)
+            if int(Y0) == int(yyy):
+                d = False
+            print('Y0', Y0, '//', yyy)
 
-        ax2.plot(X0, Y0, marker='x', markersize='20')
+        ax2.plot(X0, Y0, marker='x', markersize='10')
 
     # Y, X
         ax2.imshow(image)
-        plt.savefig('hh/{}'.format(iii))
+        # plt.savefig('hh/{}'.format(iii))
         iii = iii + 1
+    print('Итераций прошло:', iii)
+    plt.plot(X0, Y0, marker='x', markersize='10')
+    plt.savefig('k/50')
 
 
 path_img = 'konstantin/2019.10.21 ФИ-65/2019.10.21_actReg/A7 76_ac.png'
