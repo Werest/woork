@@ -26,15 +26,14 @@ def c1(image, number):
     ax2.axis('on')
 
     ax.imshow(image)
-
-    ind = np.where(image >= 0.91)
+    ind = np.where(image >= 0.9)
 
     X = ind[0]
     Y = ind[1]
 
     l_x = len(X)
 
-    eps = 0.01
+    eps = 0.001
     d = True
     flag = 0
     iii = 0
@@ -60,13 +59,12 @@ def c1(image, number):
             if int(Y0) == int(yyy):
                 d = False
             print('Y0', Y0, '//', yyy)
-
-        ax2.plot(X0, Y0, marker='x', markersize='10')
-
-    # Y, X
-        ax2.imshow(image)
-        # plt.savefig('hh/{}'.format(iii))
         iii = iii + 1
+
+    ax2.imshow(image)
+    ax2.plot(X0, Y0, marker='x', markersize='10')
+
+
     print('Итераций прошло:', iii)
     plt.plot(X0, Y0, marker='x', markersize='10')
     plt.savefig('k/50')
