@@ -13,8 +13,9 @@ def Ex(x, xc, y, yc, label):
     else:
         first = y - yc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    print(first, "//", two)
+
     r = first / two
+    print(first, "//", two, "//", r)
     result = math.sqrt(r)
     return result
 
@@ -45,7 +46,7 @@ def c1(image, number):
         if flag == 0:
             for j in Y:
                 for i in X:
-                    sumEx = sumEx + Ex(X0, i, Y0, j, label=0)
+                    sumEx = sumEx + Ex(i, X0, j, Y0, label=0)
             Y0 = X0 - step * sumEx
             flag = 1
             # if math.fabs(sumEx) < eps:
@@ -54,7 +55,7 @@ def c1(image, number):
         else:
             for j in X:
                 for i in Y:
-                    sumEy = sumEy + Ex(X0, i, Y0, j, label=1)
+                    sumEy = sumEy + Ex(i, X0, j, Y0, label=1)
             X0 = Y0 - step * sumEy
             flag = 0
             # if math.fabs(sumEy) < eps:
