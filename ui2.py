@@ -6,17 +6,17 @@ import math
 
 
 # размеры картинки в микронах 1214,6x1214,6 мкм
-def Ex(x, xc, y, yc):
-    first = x - xc
+def Ex(x, xc, y, yc, label):
+    first = 0.0
+    if label == 0:
+        first = x - xc
+    else:
+        first = y - yc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    return math.sqrt(first / two)
-
-
-def Ey(x, xc, y, yc):
-    first = y - yc
-    two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    return math.sqrt(first / two)
-
+    print(first, "//", two)
+    r = first / two
+    result = math.sqrt(r)
+    return result
 
 def c1(image, number):
     X0 = 0
@@ -42,25 +42,23 @@ def c1(image, number):
     flag = 0
     iii = 0
     while d:
-        xx0 = X0
-        yy0 = Y0
         if flag == 0:
             for j in Y:
                 for i in X:
-                    sumEx = sumEx + Ex(X0, i, Y0, j)
-                Y0 = X0 - step * sumEx
+                    sumEx = sumEx + Ex(X0, i, Y0, j, label=0)
+            Y0 = X0 - step * sumEx
             flag = 1
-            if math.fabs(sumEx) < eps:
-                d = False
+            # if math.fabs(sumEx) < eps:
+            #     d = False
             print('Y0', Y0)
         else:
             for j in X:
                 for i in Y:
-                    sumEy = sumEy + Ey(X0, i, Y0, j)
-                X0 = Y0 - step * sumEy
+                    sumEy = sumEy + Ex(X0, i, Y0, j, label=1)
+            X0 = Y0 - step * sumEy
             flag = 0
-            if math.fabs(sumEy) < eps:
-                d = False
+            # if math.fabs(sumEy) < eps:
+            #     d = False
             print('X0', X0)
 
         ax2.plot(X0, Y0, marker='x', markersize='20')
