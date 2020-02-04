@@ -18,37 +18,37 @@ def Ex(x, xc, y, yc, label):
 
 
 def search_countrs(image, level):
-    fig, (ax, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3),
+    fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
                                        sharex=True, sharey=True)
     ax.axis('on')
     ax2.axis('on')
 
     ax.imshow(image)
-    ax3.imshow(image)
 
     counts = measure.find_contours(image, level)
 
     Xc = np.random.randint(50, 100, len(counts))
     Yc = np.random.randint(50, 100, len(counts))
-    X, Y = 0.0, 0.0
+
+    X, Y = 50, 50
     for i in range(len(Xc)):
-        X, Y = c1(image, Xc[i], Yc[i])
+        X, Y = c1(Xc[i], Yc[i], counts[i][:, 0], counts[i][:, 1])
         ax2.plot(X, Y, marker='x', markersize='10')
         print('X0', X, '//', 'Y0', Y)
 
-
     ax2.imshow(image)
 
-    # plt.plot(X0, Y0, marker='x', markersize='10')
     plt.savefig('k/50')
 
+
 # Xc, Yc - координаты центроида
-def c1(image, Xc, Yc):
-    ind = np.where(image >= 0.9)
+def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
+    # image[np.array(ind_c_x.astype(int)), np.array(ind_c_y.astype(int))]
+
     step = 0.01
 
-    X = ind[0]
-    Y = ind[1]
+    X = ind_c_x.astype(int)
+    Y = ind_c_y.astype(int)
 
     X0 = Xc
     Y0 = Yc
@@ -74,6 +74,7 @@ def c1(image, Xc, Yc):
             if int(Y0) == int(yyy):
                 d = False
     return X0, Y0
+
 
 path_img = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_7/B7 97_ac.png'
 
