@@ -20,10 +20,18 @@ def c1(image, number):
     X0 = 50
     Y0 = 50
     step = 0.01
-    fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
+    counts = measure.find_contours(image, 0.8)
+    print(counts)
+
+    fig, (ax, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3),
                                   sharex=True, sharey=True)
+
     ax.axis('on')
     ax2.axis('on')
+
+    ax3.imshow(image)
+    for n, contour in enumerate(counts):
+        ax3.plot(contour[:, 1], contour[:, 0], linewidth=2)
 
     ax.imshow(image)
     ind = np.where(image >= 0.9)
@@ -31,9 +39,7 @@ def c1(image, number):
     X = ind[0]
     Y = ind[1]
 
-    l_x = len(X)
-
-    eps = 0.001
+    # eps = 0.001
     d = True
     flag = 0
     iii = 0
@@ -70,7 +76,7 @@ def c1(image, number):
     plt.savefig('k/50')
 
 
-path_img = 'konstantin/2019.10.21 ФИ-65/2019.10.21_actReg/A7 76_ac.png'
+path_img = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_3/B3 97_ac.png'
 path_img_v = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_5/B5 97_an.png'
 
 image = color.rgb2gray(io.imread(path_img))
