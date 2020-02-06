@@ -53,30 +53,40 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     X0 = Xc
     Y0 = Yc
 
-    d = True
+    d_x, d_y = True, True
     flag = 0
-    while d:
-        sumEx = 0.0
+    eps = 0.01
+    while d_x or d_y:
+        sum_ex = 0.0
         xxx = X0
         yyy = Y0
         if flag == 0:
             for i in range(0, len(X)):
-                sumEx = sumEx + Ex(X[i], X0, Y[i], Y0, label=0)
-            X0 = X0 + step * sumEx
-            flag = 1
-            if int(X0) == int(xxx):
-                d = False
-        else:
+                sum_ex = sum_ex + Ex(X[i], X0, Y[i], Y0, label=0)
+            X0 = xxx - step * sum_ex
+
+            if d_y:
+                flag = 1
+            else:
+                flag = 0
+
+            if (X0-xxx) < eps:
+                d_x = False
+        elif flag == 1:
             for i in range(0, len(X)):
-                sumEx = sumEx + Ex(X[i], X0, Y[i], Y0, label=1)
-            Y0 = Y0 + step * sumEx
-            flag = 0
-            if int(Y0) == int(yyy):
-                d = False
+                sum_ex = sum_ex + Ex(X[i], X0, Y[i], Y0, label=1)
+            Y0 = yyy - step * sum_ex
+            if d_x:
+                flag = 0
+            else:
+                flag = 1
+            if (Y0-yyy) < eps:
+                d_y = False
+        print('X', X0-xxx, 'Y', Y0-yyy)
     return X0, Y0
 
 
-path_img = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_7/B7 97_ac.png'
+path_img = 'konstantin/2019.10.24 ФИ-68/2019.10.24_actReg/A3 97_ac.png'
 
 image = color.rgb2gray(io.imread(path_img))
 image = cv2.blur(image, (3, 3))
