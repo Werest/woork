@@ -70,7 +70,7 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
             else:
                 flag = 0
 
-            if (X0-xxx) < eps:
+            if math.fabs(X0-xxx) < eps:
                 d_x = False
         elif flag == 1:
             for i in range(0, len(X)):
@@ -80,7 +80,7 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
                 flag = 0
             else:
                 flag = 1
-            if (Y0-yyy) < eps:
+            if math.fabs(Y0-yyy) < eps:
                 d_y = False
         print('X', X0-xxx, 'Y', Y0-yyy)
     return X0, Y0
