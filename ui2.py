@@ -44,46 +44,40 @@ def search_countrs(image, level):
 # Xc, Yc - координаты центроида
 def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     # image[np.array(ind_c_x.astype(int)), np.array(ind_c_y.astype(int))]
-
     step = 0.01
 
     X = ind_c_x.astype(int)
     Y = ind_c_y.astype(int)
-
-    X0 = Xc
-    Y0 = Yc
 
     d_x, d_y = True, True
     flag = 0
     eps = 0.01
     while d_x or d_y:
         sum_ex = 0.0
-        xxx = X0
-        yyy = Y0
+        xxx = Xc
+        yyy = Yc
         if flag == 0:
             for i in range(0, len(X)):
-                sum_ex = sum_ex + Ex(X[i], X0, Y[i], Y0, label=0)
-            X0 = xxx - step * sum_ex
-
+                sum_ex = sum_ex + Ex(X[i], Xc, Y[i], Yc, label=0)
+                Xc = Xc - step * sum_ex
             if d_y:
                 flag = 1
             else:
                 flag = 0
-
-            if math.fabs(X0-xxx) < eps:
+            if math.fabs(Xc-xxx) < eps:
                 d_x = False
         elif flag == 1:
             for i in range(0, len(X)):
-                sum_ex = sum_ex + Ex(X[i], X0, Y[i], Y0, label=1)
-            Y0 = yyy - step * sum_ex
+                sum_ex = sum_ex + Ex(X[i], Xc, Y[i], Yc, label=1)
+                Yc = Yc - step * sum_ex
             if d_x:
                 flag = 0
             else:
                 flag = 1
-            if math.fabs(Y0-yyy) < eps:
+            if math.fabs(Yc-yyy) < eps:
                 d_y = False
-        print('X', X0-xxx, 'Y', Y0-yyy)
-    return X0, Y0
+        print('X', Yc-xxx, 'Y', Yc-yyy)
+    return Xc, Yc
 
 
 path_img = 'konstantin/2019.10.24 ФИ-68/2019.10.24_actReg/A3 97_ac.png'
