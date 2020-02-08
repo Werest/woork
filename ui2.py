@@ -17,7 +17,13 @@ def Ex(x, xc, y, yc, label):
     return r
 
 
-def search_countrs(image, level):
+def Ex_simple(x, xc, y, yc, label):
+    two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
+    r = math.sqrt(two)
+    return r
+
+
+def search_co(image, level):
     fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
                                   sharex=True, sharey=True)
     ax.axis('on')
@@ -49,14 +55,14 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     X = ind_c_x.astype(int)
     Y = ind_c_y.astype(int)
 
-    d_x, d_y = True, True
-    flag = 0
     eps = 0.01
 
     for i in range(len(X)):
+        Xc_p = Xc
         sumex = Ex(X[i], Xc, Y[i], Yc, label=0)
         Xc = Xc - step * sumex
-
+        if math.fabs(Xc - Xc_p) < eps:
+            break
     return Xc, Yc
 
 
@@ -65,4 +71,4 @@ path_img = 'konstantin/2019.10.24 ФИ-68/2019.10.24_actReg/A3 97_ac.png'
 image = color.rgb2gray(io.imread(path_img))
 image = cv2.blur(image, (3, 3))
 
-search_countrs(image, 0.8)
+search_co(image, 0.8)
