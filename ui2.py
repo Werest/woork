@@ -17,7 +17,7 @@ def Ex(x, xc, y, yc, label):
     return r
 
 
-def Ex_simple(x, xc, y, yc, label):
+def Ex_simple(x, xc, y, yc):
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
     r = math.sqrt(two)
     return r
@@ -36,7 +36,6 @@ def search_co(image, level):
     Xc = np.random.randint(50, 100, len(counts))
     Yc = np.random.randint(50, 100, len(counts))
 
-    X, Y = 50, 50
     for i in range(len(Xc)):
         X, Y = c1(Xc[i], Yc[i], counts[i][:, 0], counts[i][:, 1])
         ax2.plot(X, Y, marker='x', markersize='5')
@@ -57,12 +56,22 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
 
     eps = 0.01
 
+    sumex = []
+    sumey = []
     for i in range(len(X)):
-        Xc_p = Xc
-        sumex = Ex(X[i], Xc, Y[i], Yc, label=0)
-        Xc = Xc - step * sumex
-        if math.fabs(Xc - Xc_p) < eps:
-            break
+        sumex.append(Ex(X[i], Xc, Y[i], Yc, label=0))
+        sumey.append(Ex(X[i], Xc, Y[i], Yc, label=1))
+
+    print(sumex)
+    print(sumey)
+
+    # while True:
+    #     Xc_p = Xc
+    #
+    #         Xc = Xc - step * sumex
+    #     print('Xc', Xc, '//', 'Xc_p', Xc_p)
+    #     if math.fabs(Xc - Xc_p) < eps:
+    #         break
     return Xc, Yc
 
 
