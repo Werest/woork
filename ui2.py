@@ -7,7 +7,6 @@ import math
 
 # размеры картинки в микронах 1214,6x1214,6 мкм
 def Ex(x, xc, y, yc, label):
-    first = 0.0
     if label == 0:
         first = x - xc
     else:
@@ -49,29 +48,37 @@ def search_co(image, level):
 # Xc, Yc - координаты центроида
 def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     # image[np.array(ind_c_x.astype(int)), np.array(ind_c_y.astype(int))]
+    global Xc_last, Yc_last
     step = 0.01
 
     X = ind_c_x.astype(int)
     Y = ind_c_y.astype(int)
 
     eps = 0.01
+    mistake_x = []
+    mistake_y = []
+    while True:
+        Xc_last = Xc
+        Yc_last = Yc
+        for i in range(len(X)):
+            sumex = Ex(X[i], Xc, Y[i], Yc, label=0)
+            Xc = Xc - step * sumex
+            sumex = Ex(X[i], Xc, Y[i], Yc, label=1)
+            Yc = Yc - step * sumex
 
-    sumex = []
-    sumey = []
-    for i in range(len(X)):
-        sumex.append(Ex(X[i], Xc, Y[i], Yc, label=0))
-        sumey.append(Ex(X[i], Xc, Y[i], Yc, label=1))
+        mistake_x.append(math.fabs(Xc - Xc_last))
+        mistake_y.append(math.fabs(Yc - Yc_last))
 
-    print(sumex)
-    print(sumey)
+        if len(mistake_x) > 1:
+            print(mistake_x)
+            print(mistake_x[1] - mistake_x[0])
+            break
 
-    # while True:
-    #     Xc_p = Xc
-    #
-    #         Xc = Xc - step * sumex
-    #     print('Xc', Xc, '//', 'Xc_p', Xc_p)
-    #     if math.fabs(Xc - Xc_p) < eps:
-    #         break
+        # if math.fabs(Xc - Xc_last) < eps or math.fabs(Yc - Yc_last) < eps:
+        #     print(math.fabs(Xc - Xc_last), "//", math.fabs(Yc - Yc_last))
+        #     break
+        # else:
+        #     print(math.fabs(Xc - Xc_last), "//", math.fabs(Yc - Yc_last))
     return Xc, Yc
 
 
