@@ -54,26 +54,43 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     X = ind_c_x.astype(int)
     Y = ind_c_y.astype(int)
 
-    eps = 0.01
-    mistake_x = []
-    mistake_y = []
+    eps = 0.1
+
+    i = 0
     while True:
         Xc_last = Xc
         Yc_last = Yc
         for i in range(len(X)):
-            sumex = Ex(X[i], Xc, Y[i], Yc, label=0)
+            sumex = Ex(X[i], Xc, Y[i], Yc, label=0) + Ex(X[i], Xc, Y[i], Yc, label=1)
             Xc = Xc - step * sumex
-            sumex = Ex(X[i], Xc, Y[i], Yc, label=1)
             Yc = Yc - step * sumex
 
-        mistake_x.append(math.fabs(Xc - Xc_last))
-        mistake_y.append(math.fabs(Yc - Yc_last))
+        ax = math.fabs(Xc - Xc_last)
+        ay = math.fabs(Yc - Yc_last)
 
-        if len(mistake_x) > 1:
-            print(mistake_x)
-            print(mistake_x[1] - mistake_x[0])
+        rx = Xc - Xc_last
+        ry = Yc - Yc_last
+
+        if ax < eps or ay < eps:
+            print("EPS", ax, "||", ay)
             break
+        else:
+            print("NOT EPS", ax, "||", ay, "(", rx, "|", ry, ")")
 
+        # if i > 0:
+        #     ax = math.fabs(Xc - Xc_last)
+        #     ay = math.fabs(Yc - Yc_last)
+        #
+        #     rx = Xc - Xc_last
+        #     ry = Yc - Yc_last
+        #
+        #     if  ax < eps or ay < eps:
+        #         print("EPS", ax, "||", ay)
+        #         break
+        #     else:
+        #         print("NOT EPS", ax, "||", ay, "(", rx, "|", ry, ")")
+
+        i = i + 1
         # if math.fabs(Xc - Xc_last) < eps or math.fabs(Yc - Yc_last) < eps:
         #     print(math.fabs(Xc - Xc_last), "//", math.fabs(Yc - Yc_last))
         #     break
