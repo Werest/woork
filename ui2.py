@@ -12,7 +12,8 @@ def Ex(x, xc, y, yc, label):
     else:
         first = y - yc
     two = math.pow((x - xc), 2) + math.pow((y - yc), 2)
-    r = first / math.sqrt(two)
+
+    r = first * math.sqrt(two)/two
     return r
 
 
@@ -49,14 +50,13 @@ def search_co(image, level):
 def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
     # image[np.array(ind_c_x.astype(int)), np.array(ind_c_y.astype(int))]
     global Xc_last, Yc_last
-    step = 0.01
+    step = 0.0001
 
     X = ind_c_x.astype(int)
     Y = ind_c_y.astype(int)
 
-    eps = 0.1
+    eps = 0.01
 
-    i = 0
     while True:
         Xc_last = Xc
         Yc_last = Yc
@@ -68,15 +68,11 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
         ax = math.fabs(Xc - Xc_last)
         ay = math.fabs(Yc - Yc_last)
 
-        rx = Xc - Xc_last
-        ry = Yc - Yc_last
-
         if ax < eps or ay < eps:
             print("EPS", ax, "||", ay)
             break
-        else:
-            print("NOT EPS", ax, "||", ay, "(", rx, "|", ry, ")")
-
+        # else:
+        #     print("NOT EPS", ax, "||", ay, "(", rx, "|", ry, ")")
         # if i > 0:
         #     ax = math.fabs(Xc - Xc_last)
         #     ay = math.fabs(Yc - Yc_last)
@@ -90,7 +86,6 @@ def c1(Xc, Yc, ind_c_x=None, ind_c_y=None):
         #     else:
         #         print("NOT EPS", ax, "||", ay, "(", rx, "|", ry, ")")
 
-        i = i + 1
         # if math.fabs(Xc - Xc_last) < eps or math.fabs(Yc - Yc_last) < eps:
         #     print(math.fabs(Xc - Xc_last), "//", math.fabs(Yc - Yc_last))
         #     break
