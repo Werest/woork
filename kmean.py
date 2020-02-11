@@ -5,30 +5,36 @@ from skimage import measure
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
-def kmeans(image, level):
-    fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3),
-                                  sharex=True, sharey=True)
+def kmeans(image, level, num):
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 3))
     ax.axis('on')
-    ax2.axis('on')
 
     ax.imshow(image)
 
     ind = np.where(image >= 0.9)
+    z = [list(hhh) for hhh in zip(ind[0], ind[1])]
+    # print(z)
 
     counts = measure.find_contours(image, level)
     for n, contour in enumerate(counts):
         ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
 
-    k = KMeans(n_clusters=1, random_state=0, n_init=10).fit(ind)
+    # k = KMeans(n_clusters=len(counts), random_state=0, n_init=100).fit(z)
     # print(k.cluster_centers_)
-    ax2.plot(k.cluster_centers_[:, 0], k.cluster_centers_[:, 1], marker='x', markersize='5')
-    ax2.imshow(image)
-    plt.savefig('k/50')
+    # ax.plot(k.cluster_centers_[:, 1], k.cluster_centers_[:, 0], marker='x', markersize='5')
 
-path_img = 'konstantin/2019.10.30 ФИ-70/2019.10.30_15/A15 94_ac.png'
+    plt.savefig('k/{}'.format(num))
 
-image = color.rgb2gray(io.imread(path_img))
-image = cv2.blur(image, (3, 3))
-kmeans(image, level=0.8)
+path_img = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_13/B13 97_ac.png'
+
+files = os.listdir('Attachments_lalv@yandex')
+for num, ftf in enumerate(files):
+    opa = 'Attachments_lalv@yandex/' + ftf
+    image = color.rgb2gray(io.imread(opa))
+    image = cv2.blur(image, (3, 3))
+    kmeans(image, level=0.7, num=num)
+
+
