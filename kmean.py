@@ -22,24 +22,27 @@ def kmeans(image, level, num):
 
     yc = []
     xc = []
+    bt = []
     for n, contour in enumerate(counts):
         for c in contour:
             yc.append(int(c[1]))
             xc.append(int(c[0]))
-            # bt.append(image[int(c[0]), int(c[1])])
+            bt.append(image[int(c[0]), int(c[1])])
 
-    z = [list(hhh) for hhh in zip(xc, yc)]
+    print(len(xc), "--", len(yc))
+    z = [list(hhh) for hhh in zip(xc, yc, 20 * bt)]
     k = KMeans(n_clusters=len(counts), random_state=0, n_init=100).fit(z)
     ax.plot(k.cluster_centers_[:, 1], k.cluster_centers_[:, 0], marker='+', markersize='5')
+    print("Центроиды: \n", k.cluster_centers_)
 
     plt.savefig('k/{}'.format(num))
 
 
-path_img = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_3/B3 97_ac.png'
+path_img = "konstantin/2019.12.20 ФИ-80/2019.12.20_actReg/2019.12.20_3/A3 111_ac.png"
 
 image = color.rgb2gray(io.imread(path_img))
-image = cv2.blur(image, (3, 3))
-kmeans(image, level=0.2, num=556)
+image = cv2.blur(image, (5, 5))
+kmeans(image, level=0.2, num=558)
 
 # files = os.listdir('Attachments_lalv@yandex')
 # for num, ftf in enumerate(files):
