@@ -10,6 +10,7 @@ import os
 
 
 def kmeans(imagep, level_, num):
+    plt.clf()
     fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
     ax.axis('on')
 
@@ -37,15 +38,16 @@ def kmeans(imagep, level_, num):
         print("Не можем определить центроды")
 
 
-path_img = "konstantin/2019.12.20 ФИ-80/2019.12.20_actReg/2019.12.20_16/A16 111_ac.png"
+# path_img = "konstantin/2019.12.20 ФИ-80/2019.12.20_actReg/2019.12.20_16/A16 111_ac.png"
+#
+# image = color.rgb2gray(io.imread(path_img))
+# image = cv2.blur(image, (5, 5))
+# kmeans(image, level_=0.8, num=559)
 
-image = color.rgb2gray(io.imread(path_img))
-image = cv2.blur(image, (5, 5))
-kmeans(image, level_=0.8, num=559)
-
-# files = os.listdir('Attachments_lalv@yandex')
-# for num, ftf in enumerate(files):
-#     opa = 'Attachments_lalv@yandex/' + ftf
-#     image = color.rgb2gray(io.imread(opa))
-#     image = cv2.blur(image, (3, 3))
-#     kmeans(image, level=0.92, num=num)
+files = os.listdir('ko2')
+for num, ftf in enumerate(files):
+    print(ftf)
+    opa = 'ko2/' + ftf
+    image = color.rgb2gray(io.imread(opa))
+    image = cv2.blur(image, (3, 3))
+    kmeans(image, level_=(image.max() - 0.1), num=num)
