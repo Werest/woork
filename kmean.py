@@ -71,13 +71,3 @@ def sql():
 
 
 sql()
-
-# files = os.listdir('ko2')
-# print(files)
-# for num, ftf in enumerate(files):
-#     plt.cla()
-#     plt.clf()
-#     opa = 'ko2/' + ftf
-#     image = color.rgb2gray(io.imread(opa))
-#     image = cv2.blur(image, (3, 3))
-#     kmeans(image, level_=(image.max() - 0.1), number=num)
