@@ -9,6 +9,8 @@ import pymysql
 
 
 def kmeans(imagep, level_, number):
+    plt.cla()
+    plt.clf()
     fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
     ax.axis('on')
 
@@ -65,7 +67,7 @@ def sql():
                     name_finally = ''.join(sp[1:])
                     image = color.rgb2gray(io.imread(file))
                     image = cv2.blur(image, (3, 3))
-                    kmeans(image, level_=(image.max() - 0.1), number=name_finally)
+                    kmeans(image, level_=(image.max() - 0.5), number=name_finally)
     finally:
         connection.close()
 
