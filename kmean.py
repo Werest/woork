@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import os
 import pymysql
+import numpy as np
 
 
 def kmeans(imagep, level_, number):
@@ -67,9 +68,10 @@ def sql():
                     name_finally = ''.join(sp[1:])
                     image = color.rgb2gray(io.imread(file))
                     image = cv2.blur(image, (3, 3))
-                    kmeans(image, level_=(image.max() - 0.5), number=name_finally)
+                    kmeans(image)
+                    kmeans(image, level_=(image.min() + 0.1), number=name_finally)
     finally:
         connection.close()
 
 
-sql()
+# sql()

@@ -9,7 +9,7 @@ from pandas import DataFrame
 
 class Test(TestCase):
     def test_sql_(self):
-        file = 'konstantin/2019.11.18 ФИ-73/2019.11.18_actReg/2019.11.18_12/A12 103_ac.png'
+        file = 'konstantin/2019.10.30 ФИ-70/2019.10.30_15/B15 105_ac.png'
         image = color.rgb2gray(io.imread(file))
         image = cv2.blur(image, (3, 3))
         pd = DataFrame(image)
