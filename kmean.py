@@ -39,7 +39,7 @@ def kmeans(imagep, level_, number):
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
         print("Центроиды: \n", k.cluster_centers_)
-        plt.savefig('k/{}'.format(number))
+        plt.savefig('k1/{}'.format(number))
         plt.close(fig)
     else:
         print("Не можем определить центроиды")
@@ -68,10 +68,25 @@ def sql():
                     name_finally = ''.join(sp[1:])
                     image = color.rgb2gray(io.imread(file))
                     image = cv2.blur(image, (3, 3))
-                    kmeans(image)
-                    kmeans(image, level_=(image.min() + 0.1), number=name_finally)
+                    # kmeans(image)
+                    kmeans(image, level_=0.1, number=name_finally)
     finally:
         connection.close()
 
 
-# sql()
+# def from_dir(d):
+#     files = os.listdir(d)
+#     for num, ftf in enumerate(files):
+#         opa = d + ftf
+#         image = color.rgb2gray(io.imread(opa))
+#         image = cv2.blur(image, (3, 3))
+#         kmeans(image, level_=0.9, number=num)
+#
+#
+# from_dir('2020-2/A4 98 um 20200325/')
+
+path = '/Users/werest/Downloads/woork/2020-2/A4 98 um 20200325/A4 98 um 20200325_t0001.tif'
+# ЧБ
+image = color.rgb2gray(io.imread(path))
+# Координаты ярких точек
+gosh = np.where(image >= (image.max() - 0.01))
