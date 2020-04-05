@@ -14,5 +14,5 @@ class Test(TestCase):
         image = cv2.blur(image, (3, 3))
         pd = DataFrame(image)
         pd.to_csv('1.csv', index=False)
-        from kmean import kmeans
-        kmeans(image, level_=(image.max() - 0.5), number=1021110212121)
+        from kmean import km
+        km(image, level_=(image.max() - 0.5), number=1021110212121)

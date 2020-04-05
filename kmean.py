@@ -9,32 +9,21 @@ import pymysql
 import numpy as np
 
 
-def kmeans(imagep, level_, number):
+def km(img, number, g):
     plt.cla()
     plt.clf()
     fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
     ax.axis('on')
 
-    ax.imshow(imagep)
-    ax1.imshow(imagep)
+    ax.imshow(img)
+    ax1.imshow(img)
 
-    # Поиск контуров по уровню (пределу)
-    ci = measure.find_contours(imagep, level_)
-
-    # X и Y центроида bt - яркость
-    yc = []
-    xc = []
-    bt = []
-    for n, contour in enumerate(ci):
-        for c in contour:
-            yc.append(int(c[1]))
-            xc.append(int(c[0]))
-            bt.append(imagep[int(c[0]), int(c[1])])
-
+    X = g[0]
+    Y = g[1]
     # Если имеется массив центроидов
-    if len(xc) > 0 and len(yc) > 0:
-        z = [list(hhh) for hhh in zip(xc, yc, bt)]
-        k = KMeans(n_clusters=len(ci), n_init=20).fit(z)
+    if len(X) > 0 and len(Y) > 0:
+        z = [list(hhh) for hhh in zip(X, Y, img[X, Y])]
+        k = KMeans(n_clusters=3).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
@@ -53,40 +42,19 @@ connection = pymysql.connect(host='localhost',
                              cursorclass=pymysql.cursors.DictCursor)
 
 
-def sql():
-    try:
-        with connection.cursor() as cursor:
-            sql = "call dbo.get_File();"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            for j, res in enumerate(result):
-                file = 'konstantin' + result[j]['name_file']
-                if os.path.exists(file):
-                    sp = file.split('/')
-                    for i, k in enumerate(sp[:-1]):
-                        sp[i] = sp[i] + '_'
-                    name_finally = ''.join(sp[1:])
-                    image = color.rgb2gray(io.imread(file))
-                    image = cv2.blur(image, (3, 3))
-                    # kmeans(image)
-                    kmeans(image, level_=0.1, number=name_finally)
-    finally:
-        connection.close()
+def f_dir(d):
+    remove_ds_store = [name for name in os.listdir(d) if not name.startswith('.')]
+    sort_list = sorted(remove_ds_store)
+
+    for num, path in enumerate(sort_list):
+        # ЧБ
+        path = d + path
+        image = color.rgb2gray(io.imread(path))
+        raize = image <= (image.max() - 0.1)
+        image = np.where(raize, 0, image)
+        gosh = np.where(raize)
+        km(image, number=num, g=gosh)
 
 
-# def from_dir(d):
-#     files = os.listdir(d)
-#     for num, ftf in enumerate(files):
-#         opa = d + ftf
-#         image = color.rgb2gray(io.imread(opa))
-#         image = cv2.blur(image, (3, 3))
-#         kmeans(image, level_=0.9, number=num)
-#
-#
-# from_dir('2020-2/A4 98 um 20200325/')
-
-path = '/Users/werest/Downloads/woork/2020-2/A4 98 um 20200325/A4 98 um 20200325_t0001.tif'
-# ЧБ
-image = color.rgb2gray(io.imread(path))
-# Координаты ярких точек
-gosh = np.where(image >= (image.max() - 0.01))
+directory = "2020-2/A4 98 um 20200325/"
+f_dir(directory)
