@@ -1,6 +1,6 @@
-from skimage import color
+from skimage import color, measure
 from skimage import io
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MeanShift
 import matplotlib.pyplot as plt
 import os
 import pymysql
@@ -21,13 +21,26 @@ def km(img, number, g):
     # Если имеется массив центроидов
     if len(x) > 0 and len(y) > 0:
         z = [list(hhh) for hhh in zip(x, y, img[x, y])]
-        k = KMeans(n_clusters=3).fit(z)
+        k = KMeans(n_clusters=4).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
         print("Центроиды: \n", k.cluster_centers_)
         plt.savefig('k1/{}'.format(number))
         plt.close(fig)
+        plt.clf()
+        data_transformed = k.transform(z)
+        s = []
+        K = range(1, 15)
+        for k in K:
+            km = KMeans(n_clusters=k)
+            km = km.fit(data_transformed)
+            s.append(km.inertia_)
+        plt.plot(K, s, 'bx-')
+        plt.xlabel('k')
+        plt.ylabel('Sum_of_squared_distances')
+        plt.title('Elbow Method For Optimal k')
+        plt.show()
     else:
         print("Не можем определить центроиды")
 
@@ -48,13 +61,18 @@ def f_dir(d, p):
         # ЧБ
         path = d + path
         image = color.rgb2gray(io.imread(path))
-        raize = image <= (image.max() - p)
-        image = np.where(raize, 0, image)
-        gosh = np.where(image >= (image.max() - p))
+
+        # calculate
+        fast = image.max() - p
+        # load
+        raze = image <= fast
+        image = np.where(raze, 0, image)
+        gosh = np.where(image >= fast)
+
         km(image, number=num, g=gosh)
         plt.scatter(gosh[0], gosh[1], color='red')
         plt.show()
-        if num == 20:
+        if num == 0:
             break
 
 
