@@ -16,7 +16,8 @@ def km(img, number, g):
     y = g[1]
     # Если имеется массив центроидов
     if len(x) > 0 and len(y) > 0:
-        z = [list(hhh) for hhh in zip(x, y, img[x, y])]
+        # zip (..., ..., img[x, y])
+        z = [list(hhh) for hhh in zip(x, y)]
         mms = StandardScaler()
         mms.fit(z)
         data_transformed = mms.transform(z)
@@ -30,9 +31,10 @@ def km(img, number, g):
         ss = normalize(np.reshape(s, (-1, 1)), axis=0)
         ind = 0
         for nnn, f_ss in enumerate(ss):
-            if f_ss <= 0.3:
+            if f_ss <= 0.1:
                 ind = nnn
                 break
+        ind = ind + 1
 
         # plt.plot(h, ss, 'bx-')
         # plt.xlabel('k')
@@ -47,7 +49,7 @@ def km(img, number, g):
         ax.imshow(img)
         ax1.imshow(img)
 
-        k = KMeans(n_clusters=3).fit(z)
+        k = KMeans(n_clusters=ind).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
@@ -86,9 +88,9 @@ def f_dir(d, p):
         km(image, number=num, g=gosh)
         # plt.scatter(gosh[0], gosh[1], color='red')
         # plt.show()
-        if num == 20:
+        if num == 0:
             break
 
 
 directory = "2020-2/A4 98 um 20200325/"
-f_dir(directory, 0.1)
+f_dir(directory, 0.2)
