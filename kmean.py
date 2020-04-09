@@ -21,8 +21,8 @@ array_y_t = []
 
 
 def km(img, number, g, dr):
-    plt.cla()
-    plt.clf()
+    # plt.cla()
+    # plt.clf()
 
     x = g[0]
     y = g[1]
@@ -37,19 +37,20 @@ def km(img, number, g, dr):
 
         vis.fit(np.array(z))
 
-        fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
-        ax.axis('on')
+        # fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
+        # ax.axis('on')
 
-        ax.imshow(img)
-        ax1.imshow(img)
+        # ax.imshow(img)
+        # ax1.imshow(img)
 
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
-        ax.scatter(y_t, x_t, s=5, c='red')
+        # ax.scatter(y_t, x_t, s=5, c='red')
 
-        plt.savefig('{}/{}'.format(dr, number))
-        plt.close(fig)
+        # plt.savefig('{}/{}'.format(dr, number))
+        # plt.close(fig)
+        log.info(number)
 
         array_x_t.append(x_t)
         array_y_t.append(y_t)
@@ -57,29 +58,25 @@ def km(img, number, g, dr):
         log.info("Не можем определить центроиды")
 
 
-def gen_video():
-    img_folder = 'k1'
-    video_name = '1.avi'
-    fileid = 'video.zip'
-
+def gen_video(img_folder, vn, fd):
     if not os.path.isfile(video_name):
         imgs = [img for img in os.listdir(img_folder)]
         frame = cv2.imread(os.path.join(img_folder, imgs[0]))
         height, width, layers = frame.shape
-        video = cv2.VideoWriter(video_name, 0, 1, (width, height))
+        video = cv2.VideoWriter(vn, 0, 1, (width, height))
 
         for image in imgs:
             video.write(cv2.imread(os.path.join(img_folder, image)))
         cv2.destroyAllWindows()
         video.release()
 
-    if not os.path.isfile(fileid):
-        log.info('Создание zip файла - %s', fileid)
-        with ZipFile(fileid, mode='w', compression=ZIP_DEFLATED) as misfile:
+    if not os.path.isfile(fd):
+        log.info('Создание zip файла - %s', fd)
+        with ZipFile(fd, mode='w', compression=ZIP_DEFLATED) as misfile:
             misfile.write(video_name)
 
 
-def f_dir(d, p, od):
+def f_dir(d, p, od, vn, fd):
     log.info('Сканирование директории для исследования - %s', d)
     remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
     sort_list = sorted(remove_ds_store)
@@ -105,15 +102,19 @@ def f_dir(d, p, od):
         #     break
     log.info('Поиск центроидов окончен')
 
+    log.info('Началась генерация видео')
+    gen_video(img_folder=d, vn=vn, fd=fd)
+    log.info('Окончена генерация видео')
+
 
 # config directory, files and etc.
 directory = "2020-2/A4 98 um 20200325/"
 output_dir = 'k1'
 
+video_name = '1.avi'
+fileid = 'video.zip'
+
 log.info('Директория для исследования - %s', directory)
 log.info('Директория для выходных изображений - %s', output_dir)
-f_dir(d=directory, p=0.2, od=output_dir)
+f_dir(d=directory, p=0.2, od=output_dir, vn=video_name, fd=fileid)
 
-log.info('Началась генерация видео')
-gen_video()
-log.info('Окончена генерация видео')
