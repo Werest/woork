@@ -1,22 +1,23 @@
 import cv2
-from skimage import color, measure
+import os
+import logging
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import color
 from skimage import io
 from sklearn.cluster import KMeans, MeanShift
-import matplotlib.pyplot as plt
-import os
-import pymysql
-import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, normalize
-import logging
 from zipfile import ZipFile, ZIP_DEFLATED
+from yellowbrick.cluster import KElbowVisualizer
 
 # config for logging
+# https://docs.python.org/3/library/logging.html#logrecord-attributes
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-def km(img, number, g, outdir):
+def km(img, number, g, dr):
     plt.cla()
     plt.clf()
 
@@ -26,29 +27,12 @@ def km(img, number, g, outdir):
     if len(x) > 0 and len(y) > 0:
         # zip (..., ..., img[x, y])
         z = [list(hhh) for hhh in zip(x, y)]
-        mms = StandardScaler()
-        mms.fit(z)
-        data_transformed = mms.transform(z)
-        s = []
-        h = range(1, 15)
-        for k in h:
-            mk = KMeans(n_clusters=k)
-            mk = mk.fit(data_transformed)
-            s.append(mk.inertia_)
 
-        ss = normalize(np.reshape(s, (-1, 1)), axis=0)
-        ind = 0
-        for nnn, f_ss in enumerate(ss):
-            if f_ss <= 0.1:
-                ind = nnn
-                break
-        ind = ind + 1
+        # elbow method
+        model = KMeans()
+        vis = KElbowVisualizer(model, k=(1, 15))
 
-        # plt.plot(h, ss, 'bx-')
-        # plt.xlabel('k')
-        # plt.ylabel('Sum_of_squared_distances')
-        # plt.title('Elbow Method For Optimal k')
-        # plt.show()
+        vis.fit(np.array(z))
 
         plt.clf()
         fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
@@ -57,13 +41,13 @@ def km(img, number, g, outdir):
         ax.imshow(img)
         ax1.imshow(img)
 
-        k = KMeans(n_clusters=ind).fit(z)
+        k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
         # print("Центроиды: \n", k.cluster_centers_)
         # logging.info()
-        plt.savefig('{}/{}'.format(outdir, number))
+        plt.savefig('{}/{}'.format(dr, number))
 
         plt.close(fig)
     else:
@@ -111,7 +95,7 @@ def f_dir(d, p, od):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= fast)
 
-        km(image, number=num, g=gosh, outdir=od)
+        km(image, number=num, g=gosh, dr=od)
         # plt.scatter(gosh[0], gosh[1], color='red')
         # plt.show()
         # if num == 0:
