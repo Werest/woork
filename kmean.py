@@ -16,6 +16,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
+array_x_t = []
+array_y_t = []
+
 
 def km(img, number, g, dr):
     plt.cla()
@@ -34,7 +37,6 @@ def km(img, number, g, dr):
 
         vis.fit(np.array(z))
 
-        plt.clf()
         fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
         ax.axis('on')
 
@@ -45,13 +47,14 @@ def km(img, number, g, dr):
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
-        # print("Центроиды: \n", k.cluster_centers_)
-        # logging.info()
-        plt.savefig('{}/{}'.format(dr, number))
 
+        plt.savefig('{}/{}'.format(dr, number))
         plt.close(fig)
+
+        array_x_t.append(x_t)
+        array_y_t.append(y_t)
     else:
-        print("Не можем определить центроиды")
+        log.info("Не можем определить центроиды")
 
 
 def gen_video():
@@ -77,7 +80,7 @@ def gen_video():
 
 
 def f_dir(d, p, od):
-    log.info('Сканирование директории для исследования')
+    log.info('Сканирование директории для исследования - %s', d)
     remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
     sort_list = sorted(remove_ds_store)
     log.info('Найдено %s образца', len(sort_list))
@@ -98,7 +101,7 @@ def f_dir(d, p, od):
         km(image, number=num, g=gosh, dr=od)
         # plt.scatter(gosh[0], gosh[1], color='red')
         # plt.show()
-        # if num == 0:
+        # if num == 3:
         #     break
     log.info('Поиск центроидов окончен')
 
