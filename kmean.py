@@ -1,15 +1,21 @@
+import base64
+
 import cv2
 import os
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+import sqlite3
 from skimage import color
 from skimage import io
 from sklearn.cluster import KMeans, MeanShift
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, normalize
 from zipfile import ZipFile, ZIP_DEFLATED
 from yellowbrick.cluster import KElbowVisualizer
+import pickle
 
+matplotlib.use('agg')
 # config for logging
 # https://docs.python.org/3/library/logging.html#logrecord-attributes
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -19,8 +25,10 @@ log = logging.getLogger(__name__)
 array_x_t = []
 array_y_t = []
 
+conn = sqlite3.connect('i.db')
+cursor = conn.cursor()
 
-def km(img, number, g, dr):
+def km(img, number, g, dr, opa):
     # plt.cla()
     # plt.clf()
 
@@ -36,21 +44,34 @@ def km(img, number, g, dr):
         vis = KElbowVisualizer(model, k=(1, 15))
 
         vis.fit(np.array(z))
+        plt.cla()
+        plt.clf()
 
-        # fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
-        # ax.axis('on')
+        fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
+        ax.axis('on')
 
-        # ax.imshow(img)
-        # ax1.imshow(img)
+        ax.imshow(img)
+        ax1.imshow(img)
 
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
-        # ax.scatter(y_t, x_t, s=5, c='red')
+        ax.scatter(y_t, x_t, s=5, c='red')
+
+        # fig.canvas.draw()
+        # data = fig.canvas.tostring_rgb()
+
+        fi = sqlite3.Binary(pickle.dumps(fig))
+        sql = '''
+            insert into n_table (`directory`, `blob`, `name`) VALUES(?, ?, ?)
+        '''
+        cursor.execute(sql, [opa, fi, number])
+        conn.commit()
+
 
         # plt.savefig('{}/{}'.format(dr, number))
-        # plt.close(fig)
-        log.info(number)
+        plt.close(fig)
+        # log.info(number)
 
         array_x_t.append(x_t)
         array_y_t.append(y_t)
@@ -95,11 +116,9 @@ def f_dir(d, p, od, vn, fd):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= fast)
 
-        km(image, number=num, g=gosh, dr=od)
+        km(image, number=num, g=gosh, dr=od, opa=d)
         # plt.scatter(gosh[0], gosh[1], color='red')
         # plt.show()
-        # if num == 3:
-        #     break
     log.info('Поиск центроидов окончен')
 
     log.info('Началась генерация видео')
