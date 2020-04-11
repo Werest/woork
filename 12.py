@@ -2,6 +2,9 @@ import os
 import sqlite3
 import numpy as np
 import cv2
+import pickle
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FCA
 
 directory = "2020-2/A4 98 um 20200325/"
 ddd = "k1"
@@ -33,29 +36,30 @@ for num, path in enumerate(sort_list):
     foo.close()
     ry = sqlite3.Binary(l)
     # cursor.execute(sql, [ddd, ry, path])
+    # if num == 0:
+    #     break
 conn.commit()
 
 
 ex = cursor.execute('''
-select `blob` from n_table
+select `blob` from n_table 
 ''')
 
-jk = ex.fetchone()
 
+video = cv2.VideoWriter('vnn9.avi', 0, 1, (800, 300))
 
-nparr = np.fromstring(jk[0], np.uint8)
-frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-height, width, layers = frame.shape
-video = cv2.VideoWriter('vnn.avi', 0, 1, (width, height))
+tables = ex.fetchall()
+for i in range(0, len(tables)):
+    fig = pickle.loads(tables[i][0])
+    canvas = FCA(fig)
+    canvas.draw()
+    nparr = np.array(canvas.renderer._renderer)
+    frame = cv2.cvtColor(nparr, cv2.COLOR_RGB2BGR)
 
-ha = ex.fetchall()
-
-for num, blob in enumerate(ha):
-    for b in blob:
-        nparr = np.fromstring(b, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        video.write(frame)
+    video.write(frame)
 cv2.destroyAllWindows()
 video.release()
+
+
 
 conn.close()
