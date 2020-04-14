@@ -63,3 +63,10 @@ video.release()
 
 
 conn.close()
+
+#         fi = sqlite3.Binary(pickle.dumps(fig))
+#         sql = '''
+#             insert into n_table (`directory`, `blob`, `name`) VALUES(?, ?, ?)
+#         '''
+#         cursor.execute(sql, [opa, fi, number])
+#         conn.commit()

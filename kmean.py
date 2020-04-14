@@ -1,21 +1,17 @@
-import base64
-
 import cv2
 import os
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
 import sqlite3
-from skimage import color
+from skimage import color, measure, feature
 from skimage import io
 from sklearn.cluster import KMeans, MeanShift
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, normalize
 from zipfile import ZipFile, ZIP_DEFLATED
 from yellowbrick.cluster import KElbowVisualizer
-import pickle
 
-matplotlib.use('agg')
+
+# plt.style.use('dark_background')
 # config for logging
 # https://docs.python.org/3/library/logging.html#logrecord-attributes
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -25,8 +21,9 @@ log = logging.getLogger(__name__)
 array_x_t = []
 array_y_t = []
 
-conn = sqlite3.connect('i.db')
-cursor = conn.cursor()
+# conn = sqlite3.connect('i.db')
+# cursor = conn.cursor()
+
 
 def km(img, number, g, dr, opa):
     # plt.cla()
@@ -44,32 +41,27 @@ def km(img, number, g, dr, opa):
         vis = KElbowVisualizer(model, k=(1, 15))
 
         vis.fit(np.array(z))
+
         plt.cla()
         plt.clf()
-
-        fig, (ax, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
+        contours = feature.canny(img, sigma=2)
+        fig, (ax, ax1, ax2) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3))
         ax.axis('on')
+
+        ax.set_title('Центроиды')
+        ax1.set_title('Оригинал')
+        ax2.set_title('Контуры')
 
         ax.imshow(img)
         ax1.imshow(img)
+        ax2.imshow(contours)
 
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
 
-        # fig.canvas.draw()
-        # data = fig.canvas.tostring_rgb()
-
-        fi = sqlite3.Binary(pickle.dumps(fig))
-        sql = '''
-            insert into n_table (`directory`, `blob`, `name`) VALUES(?, ?, ?)
-        '''
-        cursor.execute(sql, [opa, fi, number])
-        conn.commit()
-
-
-        # plt.savefig('{}/{}'.format(dr, number))
+        plt.savefig('{}/{}'.format(dr, number))
         plt.close(fig)
         # log.info(number)
 
@@ -108,7 +100,6 @@ def f_dir(d, p, od, vn, fd):
         # ЧБ
         path = d + path
         image = color.rgb2gray(io.imread(path))
-
         # calculate
         fast = image.max() - p
         # load
@@ -136,4 +127,3 @@ fileid = 'video.zip'
 log.info('Директория для исследования - %s', directory)
 log.info('Директория для выходных изображений - %s', output_dir)
 f_dir(d=directory, p=0.2, od=output_dir, vn=video_name, fd=fileid)
-
