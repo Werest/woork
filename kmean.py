@@ -44,7 +44,7 @@ def km(img, number, g, dr, opa):
 
         plt.cla()
         plt.clf()
-        contours = feature.canny(img, sigma=2)
+        contours = measure.find_contours(img, 0.5)
         fig, (ax, ax1, ax2) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3))
         ax.axis('on')
 
@@ -54,19 +54,21 @@ def km(img, number, g, dr, opa):
 
         ax.imshow(img)
         ax1.imshow(img)
-        ax2.imshow(contours)
+        for n, contour in enumerate(contours):
+            ax2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
 
-        plt.savefig('{}/{}'.format(dr, number))
-        plt.close(fig)
+        # plt.savefig('{}/{}'.format(dr, number))
+        # plt.close(fig)
         # log.info(number)
 
         array_x_t.append(x_t)
         array_y_t.append(y_t)
+        return fig
     else:
         log.info("Не можем определить центроиды")
 
@@ -96,34 +98,33 @@ def f_dir(d, p, od, vn, fd):
     log.info('Найдено %s образца', len(sort_list))
 
     log.info('Поиск центроидов начат')
-    for num, path in enumerate(sort_list):
-        # ЧБ
-        path = d + path
-        image = color.rgb2gray(io.imread(path))
-        # calculate
-        fast = image.max() - p
-        # load
-        raze = image <= fast
-        image = np.where(raze, 0, image)
-        gosh = np.where(image >= fast)
 
-        km(image, number=num, g=gosh, dr=od, opa=d)
+    # ЧБ
+    path = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_2/B2 97_ac.png'
+    image = color.rgb2gray(io.imread(path))
+    # calculate
+    fast = image.max() - p
+    # load
+    raze = image <= fast
+    image = np.where(raze, 0, image)
+    gosh = np.where(image >= fast)
+
+    fig = km(image, number=91001, g=gosh, dr=od, opa=d)
         # plt.scatter(gosh[0], gosh[1], color='red')
         # plt.show()
     log.info('Поиск центроидов окончен')
-
-    log.info('Началась генерация видео')
-    gen_video(img_folder=d, vn=vn, fd=fd)
-    log.info('Окончена генерация видео')
-
+    return fig
+    # log.info('Началась генерация видео')
+    # gen_video(img_folder=d, vn=vn, fd=fd)
+    # log.info('Окончена генерация видео')
 
 # config directory, files and etc.
 directory = "2020-2/A4 98 um 20200325/"
-output_dir = 'k1'
+output_dir = 'a11'
 
 video_name = '1.avi'
 fileid = 'video.zip'
 
 log.info('Директория для исследования - %s', directory)
 log.info('Директория для выходных изображений - %s', output_dir)
-f_dir(d=directory, p=0.2, od=output_dir, vn=video_name, fd=fileid)
+f_dir(d=directory, p=0.5, od=output_dir, vn=video_name, fd=fileid)
