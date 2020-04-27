@@ -2,12 +2,14 @@ import random
 from PyQt5 import QtWidgets, uic, QtCore
 import sys
 import numpy as np
-
+import time
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 import kmean
+
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -15,38 +17,78 @@ class Ui(QtWidgets.QMainWindow):
         uic.loadUi('modus.ui', self)
         self.setWindowTitle('Hello!')
         self.button = self.findChild(QtWidgets.QPushButton, 'pushButton')
-        self.input = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
+
+        # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
-        self.label = self.findChild(QtWidgets.QLabel, 'label')
+        # Размеры x,y
+        self.input_x = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
+        self.input_y = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_3')
 
-        # test data
-        # data = np.array([0.7, 0.7, 0.7, 0.8, 0.9, 0.9, 1.5, 1.5, 1.5, 1.5])
-        # fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
-        # bins = np.arange(0.6, 1.62, 0.02)
-        # n1, bins1, patches1 = ax1.hist(data, bins, alpha=0.6, density=False, cumulative=False)
-        # n1, bins1, patches1 = ax2.hist(data, bins, alpha=0.6, density=False, cumulative=False)
+        self.directory = "2020-2/A4 98 um 20200325/"
+        self.output_dir = 'a11'
+        self.video_name = '1.avi'
+        self.fileid = 'video.zip'
 
-        # config directory, files and etc.
-        directory = "2020-2/A4 98 um 20200325/"
-        output_dir = 'a11'
+        # self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plot, self))
 
-        video_name = '1.avi'
-        fileid = 'video.zip'
+        self.fig = Figure(figsize=(8, 3), dpi=100)
+        self.axes = self.fig.add_subplot(131)
+        self.axes1 = self.fig.add_subplot(132)
+        self.axes2 = self.fig.add_subplot(133)
 
-        # log.info('Директория для исследования - %s', directory)
-        # log.info('Директория для выходных изображений - %s', output_dir)
-        fig = kmean.f_dir(d=directory, p=0.5, od=output_dir, vn=video_name, fd=fileid)
-        # plot
-        self.plotWidget = FigureCanvas(fig)
-        lay = QtWidgets.QVBoxLayout(self.graph)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(self.plotWidget)
-        # add toolbar
-        self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plotWidget, self))
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y = kmean.f_dir(d=self.directory,
+                                                                      p=0.6,
+                                                                      od=self.output_dir,
+                                                                      vn=self.video_name,
+                                                                      fd=self.fileid,
+                                                                      rz_x=float(self.input_x.text().replace(',', '.')),
+                                                                      rz_y=float(self.input_y.text().replace(',', '.')))
 
+        self.axes.set_title('Центроиды')
+        self.axes1.set_title('Оригинал')
+        self.axes2.set_title('Контуры - {}'.format(parametr_p))
 
+        self.axes.imshow(img)
+        self.axes1.imshow(img)
+        self.axes.scatter(y_t, x_t, s=5, c='red')
+        for n, contour in enumerate(contours):
+            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
+        self.plot = FigureCanvas(self.fig)
+        self.lay = QtWidgets.QVBoxLayout(self.graph)
 
+        self.lay.setContentsMargins(0, 0, 0, 0)
+        self.lay.addWidget(self.plot)
+
+        self.button.clicked.connect(self.update_chart)
+
+    def update_chart(self):
+        rz_x = float(self.input_x.text().replace(',', '.'))
+        rz_y = float(self.input_y.text().replace(',', '.'))
+
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y = kmean.f_dir(d=self.directory,
+                                                          p=float(self.input_2.text().replace(',', '.')),
+                                                          od=self.output_dir,
+                                                          vn=self.video_name,
+                                                          fd=self.fileid,
+                                                          rz_x=rz_x,
+                                                          rz_y=rz_y)
+        self.axes.cla()
+        self.axes1.cla()
+        self.axes2.cla()
+
+        self.axes.set_title('Центроиды')
+        self.axes1.set_title('Оригинал')
+        self.axes2.set_title('Контуры - {}'.format(parametr_p))
+
+        self.axes.imshow(img)
+        self.axes1.imshow(img)
+        self.axes.scatter(y_t, x_t, s=5, c='red')
+        for n, contour in enumerate(contours):
+            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+
+        self.plot.draw_idle()
+        pass
 
 
 app = QtWidgets.QApplication(sys.argv)

@@ -9,7 +9,7 @@ from skimage import io
 from sklearn.cluster import KMeans, MeanShift
 from zipfile import ZipFile, ZIP_DEFLATED
 from yellowbrick.cluster import KElbowVisualizer
-
+import math
 
 # plt.style.use('dark_background')
 # config for logging
@@ -21,11 +21,12 @@ log = logging.getLogger(__name__)
 array_x_t = []
 array_y_t = []
 
+
 # conn = sqlite3.connect('i.db')
 # cursor = conn.cursor()
 
 
-def km(img, number, g, dr, opa):
+def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
     # plt.cla()
     # plt.clf()
 
@@ -33,6 +34,8 @@ def km(img, number, g, dr, opa):
     y = g[1]
     # Если имеется массив центроидов
     if len(x) > 0 and len(y) > 0:
+        mkm_width, mkm_height = rz(1214.6, 1214.6, img, rz_x, rz_y)
+
         # zip (..., ..., img[x, y])
         z = [list(hhh) for hhh in zip(x, y)]
 
@@ -46,14 +49,16 @@ def km(img, number, g, dr, opa):
         plt.clf()
         contours = measure.find_contours(img, 0.5)
         fig, (ax, ax1, ax2) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3))
+
         ax.axis('on')
 
         ax.set_title('Центроиды')
         ax1.set_title('Оригинал')
-        ax2.set_title('Контуры')
+        ax2.set_title('Контуры - {}'.format(parametr_p))
 
         ax.imshow(img)
         ax1.imshow(img)
+
         for n, contour in enumerate(contours):
             ax2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
@@ -68,9 +73,23 @@ def km(img, number, g, dr, opa):
 
         array_x_t.append(x_t)
         array_y_t.append(y_t)
-        return fig
+        log.info('Параметр порога - {}'.format(parametr_p))
+
+
+        # , contours, y_t, x_t
+        return img, contours, y_t, x_t, parametr_p, mkm_width, mkm_height
     else:
         log.info("Не можем определить центроиды")
+
+
+def rz(mkm_w, mkm_h, img, rz_x, rz_y):
+    iw, ih = img.shape[0], img.shape[1]
+    # поиск сколько приходится на 1 пиксель мкм
+    iw_1, ih_1 = mkm_w / iw, mkm_h / ih
+
+    mkm_width, mkm_height = round(iw_1*rz_x), round(ih_1*rz_y)
+
+    return mkm_width, mkm_height
 
 
 def gen_video(img_folder, vn, fd):
@@ -91,11 +110,11 @@ def gen_video(img_folder, vn, fd):
             misfile.write(video_name)
 
 
-def f_dir(d, p, od, vn, fd):
-    log.info('Сканирование директории для исследования - %s', d)
-    remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
-    sort_list = sorted(remove_ds_store)
-    log.info('Найдено %s образца', len(sort_list))
+def f_dir(d, p, od, vn, fd, rz_x, rz_y):
+    # log.info('Сканирование директории для исследования - %s', d)
+    # remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
+    # sort_list = sorted(remove_ds_store)
+    # log.info('Найдено %s образца', len(sort_list))
 
     log.info('Поиск центроидов начат')
 
@@ -109,14 +128,15 @@ def f_dir(d, p, od, vn, fd):
     image = np.where(raze, 0, image)
     gosh = np.where(image >= fast)
 
-    fig = km(image, number=91001, g=gosh, dr=od, opa=d)
-        # plt.scatter(gosh[0], gosh[1], color='red')
-        # plt.show()
+    fig = km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x, rz_y=rz_y)
+    # plt.scatter(gosh[0], gosh[1], color='red')
+    # plt.show()
     log.info('Поиск центроидов окончен')
     return fig
     # log.info('Началась генерация видео')
     # gen_video(img_folder=d, vn=vn, fd=fd)
     # log.info('Окончена генерация видео')
+
 
 # config directory, files and etc.
 directory = "2020-2/A4 98 um 20200325/"
@@ -127,4 +147,4 @@ fileid = 'video.zip'
 
 log.info('Директория для исследования - %s', directory)
 log.info('Директория для выходных изображений - %s', output_dir)
-f_dir(d=directory, p=0.5, od=output_dir, vn=video_name, fd=fileid)
+# f_dir(d=directory, p=0.6, od=output_dir, vn=video_name, fd=fileid)
