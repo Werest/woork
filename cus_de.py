@@ -1,13 +1,9 @@
-import random
-from PyQt5 import QtWidgets, uic, QtCore
+from PyQt5 import QtWidgets, uic
 import sys
 import numpy as np
-import time
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import pandas as pd
+import math
 
 import kmean
 
@@ -38,27 +34,7 @@ class Ui(QtWidgets.QMainWindow):
         self.axes1 = self.fig.add_subplot(132)
         self.axes2 = self.fig.add_subplot(133)
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = kmean.f_dir(d=self.directory,
-                                                                                 p=0.5,
-                                                                                 od=self.output_dir,
-                                                                                 vn=self.video_name,
-                                                                                 fd=self.fileid,
-                                                                                 rz_x=float(
-                                                                                     self.input_x.text().replace(',',
-                                                                                                                 '.')),
-                                                                                 rz_y=float(
-                                                                                     self.input_y.text().replace(',',
-                                                                                                                 '.')))
 
-        self.axes.set_title('Центроиды')
-        self.axes1.set_title('Оригинал')
-        self.axes2.set_title('Контуры - {}'.format(parametr_p))
-
-        self.axes.imshow(img)
-        self.axes1.imshow(img)
-        self.axes.scatter(y_t, x_t, s=5, c='red')
-        for n, contour in enumerate(contours):
-            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot = FigureCanvas(self.fig)
         self.lay = QtWidgets.QVBoxLayout(self.graph)
@@ -68,6 +44,7 @@ class Ui(QtWidgets.QMainWindow):
 
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
+        self.update_chart()
 
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
@@ -94,10 +71,17 @@ class Ui(QtWidgets.QMainWindow):
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
         for n, contour in enumerate(contours):
-            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+            A_Xmin = min(contour[:, 0])
+            A_Ymax = max(contour[:, 1])
+
+            B_Xmax = max(contour[:, 0])
+            B_Ymin = min(contour[:, 1])
+            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+            D_vector = math.sqrt(D_vector)
+            if D_vector >= rz_x:
+                self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot.draw_idle()
-        pass
 
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))

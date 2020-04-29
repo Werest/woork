@@ -38,36 +38,9 @@ def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
         # elbow method
         model = KMeans()
         vis = KElbowVisualizer(model, k=(1, 15))
-
         vis.fit(np.array(z))
 
-        plt.cla()
-        plt.clf()
         contours = measure.find_contours(img, 0.5)
-        fig, (ax, ax1, ax2) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3))
-
-        ax.axis('on')
-
-        ax.set_title('Центроиды')
-        ax1.set_title('Оригинал')
-        ax2.set_title('Контуры - {}'.format(parametr_p))
-
-        ax.imshow(img)
-        ax1.imshow(img)
-
-
-        for n, contour in enumerate(contours):
-            # A (Xmin, Ymax)
-            # B (Xmax, Ymin)
-            A_Xmin = min(contour[:, 0])
-            A_Ymax = max(contour[:, 1])
-
-            B_Xmax = max(contour[:, 0])
-            B_Ymin = min(contour[:, 1])
-            D_vector = pow(B_Xmax - A_Xmin, 2) + pow(B_Ymin - A_Ymax)
-            D_vector = math.sqrt(D_vector)
-
-            ax2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
@@ -76,7 +49,6 @@ def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
-        ax.scatter(y_t, x_t, s=5, c='red')
 
         array_x_t.append(x_t)
         array_y_t.append(y_t)
@@ -94,7 +66,7 @@ def rz(mkm_w, mkm_h, img, rz_x, rz_y):
 
     mkm_width, mkm_height = round(iw_1*rz_x), round(ih_1*rz_y)
 
-    return mkm_width
+    return mkm_width, mkm_height
 
 
 def gen_video(img_folder, vn, fd):
