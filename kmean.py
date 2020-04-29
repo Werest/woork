@@ -22,10 +22,6 @@ array_x_t = []
 array_y_t = []
 
 
-# conn = sqlite3.connect('i.db')
-# cursor = conn.cursor()
-
-
 def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
     # plt.cla()
     # plt.clf()
@@ -59,25 +55,34 @@ def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
         ax.imshow(img)
         ax1.imshow(img)
 
+
         for n, contour in enumerate(contours):
+            # A (Xmin, Ymax)
+            # B (Xmax, Ymin)
+            A_Xmin = min(contour[:, 0])
+            A_Ymax = max(contour[:, 1])
+
+            B_Xmax = max(contour[:, 0])
+            B_Ymin = min(contour[:, 1])
+            D_vector = pow(B_Xmax - A_Xmin, 2) + pow(B_Ymin - A_Ymax)
+            D_vector = math.sqrt(D_vector)
+
             ax2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+
+        # длина вектора по координатам
+        # AB = sqrt (bx - ax)^2 + (by-ay)^2
+
 
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
         ax.scatter(y_t, x_t, s=5, c='red')
 
-        # plt.savefig('{}/{}'.format(dr, number))
-        # plt.close(fig)
-        # log.info(number)
-
         array_x_t.append(x_t)
         array_y_t.append(y_t)
         log.info('Параметр порога - {}'.format(parametr_p))
 
-
-        # , contours, y_t, x_t
-        return img, contours, y_t, x_t, parametr_p, mkm_width, mkm_height
+        return img, contours, y_t, x_t, parametr_p, mkm_width, mkm_height, k.cluster_centers_
     else:
         log.info("Не можем определить центроиды")
 
@@ -89,7 +94,7 @@ def rz(mkm_w, mkm_h, img, rz_x, rz_y):
 
     mkm_width, mkm_height = round(iw_1*rz_x), round(ih_1*rz_y)
 
-    return mkm_width, mkm_height
+    return mkm_width
 
 
 def gen_video(img_folder, vn, fd):
@@ -129,13 +134,8 @@ def f_dir(d, p, od, vn, fd, rz_x, rz_y):
     gosh = np.where(image >= fast)
 
     fig = km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x, rz_y=rz_y)
-    # plt.scatter(gosh[0], gosh[1], color='red')
-    # plt.show()
     log.info('Поиск центроидов окончен')
     return fig
-    # log.info('Началась генерация видео')
-    # gen_video(img_folder=d, vn=vn, fd=fd)
-    # log.info('Окончена генерация видео')
 
 
 # config directory, files and etc.

@@ -7,6 +7,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import kmean
 
@@ -15,8 +16,9 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('modus.ui', self)
-        self.setWindowTitle('Hello!')
+        self.setWindowTitle('Автоматическая детекция гломерул обонятельной луковицы')
         self.button = self.findChild(QtWidgets.QPushButton, 'pushButton')
+        self.button_exp = self.findChild(QtWidgets.QPushButton, 'pushButton_2')
 
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
@@ -36,13 +38,17 @@ class Ui(QtWidgets.QMainWindow):
         self.axes1 = self.fig.add_subplot(132)
         self.axes2 = self.fig.add_subplot(133)
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y = kmean.f_dir(d=self.directory,
-                                                                      p=0.6,
-                                                                      od=self.output_dir,
-                                                                      vn=self.video_name,
-                                                                      fd=self.fileid,
-                                                                      rz_x=float(self.input_x.text().replace(',', '.')),
-                                                                      rz_y=float(self.input_y.text().replace(',', '.')))
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = kmean.f_dir(d=self.directory,
+                                                                                 p=0.5,
+                                                                                 od=self.output_dir,
+                                                                                 vn=self.video_name,
+                                                                                 fd=self.fileid,
+                                                                                 rz_x=float(
+                                                                                     self.input_x.text().replace(',',
+                                                                                                                 '.')),
+                                                                                 rz_y=float(
+                                                                                     self.input_y.text().replace(',',
+                                                                                                                 '.')))
 
         self.axes.set_title('Центроиды')
         self.axes1.set_title('Оригинал')
@@ -60,19 +66,22 @@ class Ui(QtWidgets.QMainWindow):
         self.lay.setContentsMargins(0, 0, 0, 0)
         self.lay.addWidget(self.plot)
 
+        self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
 
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
         rz_y = float(self.input_y.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y = kmean.f_dir(d=self.directory,
-                                                          p=float(self.input_2.text().replace(',', '.')),
-                                                          od=self.output_dir,
-                                                          vn=self.video_name,
-                                                          fd=self.fileid,
-                                                          rz_x=rz_x,
-                                                          rz_y=rz_y)
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = kmean.f_dir(d=self.directory,
+                                                                                 p=float(
+                                                                                     self.input_2.text().replace(',',
+                                                                                                                 '.')),
+                                                                                 od=self.output_dir,
+                                                                                 vn=self.video_name,
+                                                                                 fd=self.fileid,
+                                                                                 rz_x=rz_x,
+                                                                                 rz_y=rz_y)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -89,6 +98,28 @@ class Ui(QtWidgets.QMainWindow):
 
         self.plot.draw_idle()
         pass
+
+    def export_csv(self):
+        rz_x = float(self.input_x.text().replace(',', '.'))
+        rz_y = float(self.input_y.text().replace(',', '.'))
+
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = kmean.f_dir(d=self.directory,
+                                                                                 p=float(
+                                                                                     self.input_2.text().replace(',',
+                                                                                                                 '.')),
+                                                                                 od=self.output_dir,
+                                                                                 vn=self.video_name,
+                                                                                 fd=self.fileid,
+                                                                                 rz_x=rz_x,
+                                                                                 rz_y=rz_y)
+
+        df = []
+        for c in contours:
+            for k in c:
+                df.append(k)
+
+        np.savetxt('contours.csv', df, delimiter=',')
+        np.savetxt('centroids.csv', centroids, delimiter=',')
 
 
 app = QtWidgets.QApplication(sys.argv)
