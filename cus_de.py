@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 array_x_t = []
 array_y_t = []
 
+
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -61,14 +62,15 @@ class Ui(QtWidgets.QMainWindow):
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, caff, centroids = self.f_dir(d=self.directory,
-                                                                                 p=float(
-                                                                                     self.input_2.text().replace(',',
-                                                                                                                 '.')),
-                                                                                 od=self.output_dir,
-                                                                                 vn=self.video_name,
-                                                                                 fd=self.fileid,
-                                                                                 rz_x=rz_x)
+        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(d=self.directory,
+                                                                                     p=float(
+                                                                                         self.input_2.text().replace(
+                                                                                             ',',
+                                                                                             '.')),
+                                                                                     od=self.output_dir,
+                                                                                     vn=self.video_name,
+                                                                                     fd=self.fileid,
+                                                                                     rz_x=rz_x)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -82,6 +84,7 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.scatter(y_t, x_t, s=5, c='red')
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
+        DD_vector = []
         for n, contour in enumerate(contours):
             A_Xmin = min(contour[:, 0])
             A_Ymax = max(contour[:, 1])
@@ -90,24 +93,28 @@ class Ui(QtWidgets.QMainWindow):
             B_Ymin = min(contour[:, 1])
             D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
             D_vector = math.sqrt(D_vector) * caff
+            DD_vector.append(D_vector)
             if D_vector >= rz_x:
                 self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot.draw_idle()
+        max_DD_v, min_DD_v = max(DD_vector), min(DD_vector)
+        self.label_max.setText('Максимальная гломерула - {} мкм'.format(str(max_DD_v)))
+        self.label_min.setText('Минимальная гломерула - {} мкм'.format(str(min_DD_v)))
 
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
         rz_y = float(self.input_y.text().replace(',', '.'))
 
         img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
-                                                                                 p=float(
-                                                                                     self.input_2.text().replace(',',
-                                                                                                                 '.')),
-                                                                                 od=self.output_dir,
-                                                                                 vn=self.video_name,
-                                                                                 fd=self.fileid,
-                                                                                 rz_x=rz_x,
-                                                                                 rz_y=rz_y)
+                                                                                p=float(
+                                                                                    self.input_2.text().replace(',',
+                                                                                                                '.')),
+                                                                                od=self.output_dir,
+                                                                                vn=self.video_name,
+                                                                                fd=self.fileid,
+                                                                                rz_x=rz_x,
+                                                                                rz_y=rz_y)
 
         df = []
         for c in contours:
@@ -176,8 +183,9 @@ class Ui(QtWidgets.QMainWindow):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= fast)
 
-
+        fig = self.km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
         log.info('Поиск центроидов окончен')
+        return fig
 
 
 app = QtWidgets.QApplication(sys.argv)
