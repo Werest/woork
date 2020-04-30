@@ -42,10 +42,6 @@ def km(img, number, g, dr, opa, parametr_p, rz_x):
 
         contours = measure.find_contours(img, 0.5)
 
-        # длина вектора по координатам
-        # AB = sqrt (bx - ax)^2 + (by-ay)^2
-
-
         k = KMeans(n_clusters=vis.elbow_value_).fit(z)
         x_t = list(k.cluster_centers_[:, 0])
         y_t = list(k.cluster_centers_[:, 1])
@@ -64,7 +60,7 @@ def rz(mkm, img, rz_x):
     # поиск сколько приходится на 1 пиксель мкм
     caff = mkm / iw
 
-    mkm_width = round(caff*rz_x)
+    mkm_width = round(caff * rz_x)
 
     return mkm_width, caff
 
