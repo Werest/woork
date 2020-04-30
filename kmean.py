@@ -22,7 +22,7 @@ array_x_t = []
 array_y_t = []
 
 
-def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
+def km(img, number, g, dr, opa, parametr_p, rz_x):
     # plt.cla()
     # plt.clf()
 
@@ -30,7 +30,7 @@ def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
     y = g[1]
     # Если имеется массив центроидов
     if len(x) > 0 and len(y) > 0:
-        mkm_width, mkm_height = rz(1214.6, 1214.6, img, rz_x, rz_y)
+        mkm_width, caff = rz(1214.6, img, rz_x)
 
         # zip (..., ..., img[x, y])
         z = [list(hhh) for hhh in zip(x, y)]
@@ -54,19 +54,19 @@ def km(img, number, g, dr, opa, parametr_p, rz_x, rz_y):
         array_y_t.append(y_t)
         log.info('Параметр порога - {}'.format(parametr_p))
 
-        return img, contours, y_t, x_t, parametr_p, mkm_width, mkm_height, k.cluster_centers_
+        return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
     else:
         log.info("Не можем определить центроиды")
 
 
-def rz(mkm_w, mkm_h, img, rz_x, rz_y):
+def rz(mkm, img, rz_x):
     iw, ih = img.shape[0], img.shape[1]
     # поиск сколько приходится на 1 пиксель мкм
-    iw_1, ih_1 = mkm_w / iw, mkm_h / ih
+    caff = mkm / iw
 
-    mkm_width, mkm_height = round(iw_1*rz_x), round(ih_1*rz_y)
+    mkm_width = round(caff*rz_x)
 
-    return mkm_width, mkm_height
+    return mkm_width, caff
 
 
 def gen_video(img_folder, vn, fd):
@@ -87,7 +87,7 @@ def gen_video(img_folder, vn, fd):
             misfile.write(video_name)
 
 
-def f_dir(d, p, od, vn, fd, rz_x, rz_y):
+def f_dir(d, p, od, vn, fd, rz_x):
     # log.info('Сканирование директории для исследования - %s', d)
     # remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
     # sort_list = sorted(remove_ds_store)
@@ -105,7 +105,7 @@ def f_dir(d, p, od, vn, fd, rz_x, rz_y):
     image = np.where(raze, 0, image)
     gosh = np.where(image >= fast)
 
-    fig = km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x, rz_y=rz_y)
+    fig = km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
     log.info('Поиск центроидов окончен')
     return fig
 

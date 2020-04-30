@@ -18,9 +18,14 @@ class Ui(QtWidgets.QMainWindow):
 
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
-        # Размеры x,y
+        # Размер
         self.input_x = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
-        self.input_y = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_3')
+
+        # label
+        self.label_max = self.findChild(QtWidgets.QLabel, 'label_3')
+        self.label_min = self.findChild(QtWidgets.QLabel, 'label_4')
+
+        self.label_max.setText('Hello')
 
         self.directory = "2020-2/A4 98 um 20200325/"
         self.output_dir = 'a11'
@@ -48,17 +53,15 @@ class Ui(QtWidgets.QMainWindow):
 
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
-        rz_y = float(self.input_y.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = kmean.f_dir(d=self.directory,
+        img, contours, y_t, x_t, parametr_p, rz_x, caff, centroids = kmean.f_dir(d=self.directory,
                                                                                  p=float(
                                                                                      self.input_2.text().replace(',',
                                                                                                                  '.')),
                                                                                  od=self.output_dir,
                                                                                  vn=self.video_name,
                                                                                  fd=self.fileid,
-                                                                                 rz_x=rz_x,
-                                                                                 rz_y=rz_y)
+                                                                                 rz_x=rz_x)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -77,7 +80,7 @@ class Ui(QtWidgets.QMainWindow):
             B_Xmax = max(contour[:, 0])
             B_Ymin = min(contour[:, 1])
             D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
-            D_vector = math.sqrt(D_vector)
+            D_vector = math.sqrt(D_vector) * caff
             if D_vector >= rz_x:
                 self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
