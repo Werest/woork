@@ -1,52 +1,183 @@
-import random
-from PyQt5 import QtWidgets, uic, QtCore
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 import sys
 import numpy as np
-
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+import math
 
-import kmean
+from skimage import measure, color, io
+from sklearn.cluster import KMeans
+from yellowbrick.cluster import KElbowVisualizer
+
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                    , level=logging.INFO)
+log = logging.getLogger(__name__)
+
+array_x_t = []
+array_y_t = []
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('modus.ui', self)
-        self.setWindowTitle('Hello!')
+        self.setWindowTitle('Автоматическая детекция гломерул обонятельной луковицы')
         self.button = self.findChild(QtWidgets.QPushButton, 'pushButton')
-        self.input = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
+        self.button_exp = self.findChild(QtWidgets.QPushButton, 'pushButton_2')
+
+        # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
-        self.label = self.findChild(QtWidgets.QLabel, 'label')
+        # Размер
+        self.input_x = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
 
-        # test data
-        # data = np.array([0.7, 0.7, 0.7, 0.8, 0.9, 0.9, 1.5, 1.5, 1.5, 1.5])
-        # fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 3))
-        # bins = np.arange(0.6, 1.62, 0.02)
-        # n1, bins1, patches1 = ax1.hist(data, bins, alpha=0.6, density=False, cumulative=False)
-        # n1, bins1, patches1 = ax2.hist(data, bins, alpha=0.6, density=False, cumulative=False)
+        # label
+        self.label_max = self.findChild(QtWidgets.QLabel, 'label_3')
+        self.label_min = self.findChild(QtWidgets.QLabel, 'label_4')
 
-        # config directory, files and etc.
-        directory = "2020-2/A4 98 um 20200325/"
-        output_dir = 'a11'
+        self.directory = "2020-2/A4 98 um 20200325/"
+        self.output_dir = 'a11'
+        self.video_name = '1.avi'
+        self.fileid = 'video.zip'
 
-        video_name = '1.avi'
-        fileid = 'video.zip'
+        # self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plot, self))
 
-        # log.info('Директория для исследования - %s', directory)
-        # log.info('Директория для выходных изображений - %s', output_dir)
-        fig = kmean.f_dir(d=directory, p=0.5, od=output_dir, vn=video_name, fd=fileid)
-        # plot
-        self.plotWidget = FigureCanvas(fig)
-        lay = QtWidgets.QVBoxLayout(self.graph)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(self.plotWidget)
-        # add toolbar
-        self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plotWidget, self))
+        self.fig = Figure(figsize=(8, 3), dpi=100)
+        self.axes = self.fig.add_subplot(131)
+        self.axes1 = self.fig.add_subplot(132)
+        self.axes2 = self.fig.add_subplot(133)
+
+        self.plot = FigureCanvas(self.fig)
+        self.lay = QtWidgets.QVBoxLayout(self.graph)
+
+        self.lay.setContentsMargins(0, 0, 0, 0)
+        self.lay.addWidget(self.plot)
+
+        self.button_exp.clicked.connect(self.export_csv)
+        self.button.clicked.connect(self.update_chart)
+        self.update_chart()
+
+    def update_chart(self):
+        rz_x = float(self.input_x.text().replace(',', '.'))
+
+        img, contours, y_t, x_t, parametr_p, rz_x, caff, centroids = self.f_dir(d=self.directory,
+                                                                                 p=float(
+                                                                                     self.input_2.text().replace(',',
+                                                                                                                 '.')),
+                                                                                 od=self.output_dir,
+                                                                                 vn=self.video_name,
+                                                                                 fd=self.fileid,
+                                                                                 rz_x=rz_x)
+        self.axes.cla()
+        self.axes1.cla()
+        self.axes2.cla()
+
+        self.axes.set_title('Центроиды')
+        self.axes1.set_title('Оригинал')
+        self.axes2.set_title('Контуры - {}'.format(parametr_p))
+
+        self.axes.imshow(img)
+        self.axes1.imshow(img)
+        self.axes.scatter(y_t, x_t, s=5, c='red')
+        # длина вектора по координатам
+        # AB = sqrt (bx - ax)^2 + (by-ay)^2
+        for n, contour in enumerate(contours):
+            A_Xmin = min(contour[:, 0])
+            A_Ymax = max(contour[:, 1])
+
+            B_Xmax = max(contour[:, 0])
+            B_Ymin = min(contour[:, 1])
+            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+            D_vector = math.sqrt(D_vector) * caff
+            if D_vector >= rz_x:
+                self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+
+        self.plot.draw_idle()
+
+    def export_csv(self):
+        rz_x = float(self.input_x.text().replace(',', '.'))
+        rz_y = float(self.input_y.text().replace(',', '.'))
+
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
+                                                                                 p=float(
+                                                                                     self.input_2.text().replace(',',
+                                                                                                                 '.')),
+                                                                                 od=self.output_dir,
+                                                                                 vn=self.video_name,
+                                                                                 fd=self.fileid,
+                                                                                 rz_x=rz_x,
+                                                                                 rz_y=rz_y)
+
+        df = []
+        for c in contours:
+            for k in c:
+                df.append(k)
+
+        np.savetxt('contours.csv', df, delimiter=',')
+        np.savetxt('centroids.csv', centroids, delimiter=',')
+
+    def km(self, img, number, g, dr, opa, parametr_p, rz_x):
+        # plt.cla()
+        # plt.clf()
+
+        x = g[0]
+        y = g[1]
+        # Если имеется массив центроидов
+        if len(x) > 0 and len(y) > 0:
+            mkm_width, caff = self.rz(1214.6, img, rz_x)
+
+            # zip (..., ..., img[x, y])
+            z = [list(hhh) for hhh in zip(x, y)]
+
+            # elbow method
+            model = KMeans()
+            vis = KElbowVisualizer(model, k=(1, 15))
+            vis.fit(np.array(z))
+
+            contours = measure.find_contours(img, 0.5)
+
+            k = KMeans(n_clusters=vis.elbow_value_).fit(z)
+            x_t = list(k.cluster_centers_[:, 0])
+            y_t = list(k.cluster_centers_[:, 1])
+
+            array_x_t.append(x_t)
+            array_y_t.append(y_t)
+            log.info('Параметр порога - {}'.format(parametr_p))
+
+            return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
+        else:
+            log.info("Не можем определить центроиды")
+
+    def rz(self, mkm, img, rz_x):
+        iw, ih = img.shape[0], img.shape[1]
+        # поиск сколько приходится на 1 пиксель мкм
+        caff = mkm / iw
+
+        mkm_width = round(caff * rz_x)
+
+        return mkm_width, caff
+
+    def f_dir(self, d, p, od, vn, fd, rz_x):
+        # log.info('Сканирование директории для исследования - %s', d)
+        # remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
+        # sort_list = sorted(remove_ds_store)
+        # log.info('Найдено %s образца', len(sort_list))
+
+        log.info('Поиск центроидов начат')
+
+        # ЧБ
+        path = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_2/B2 97_ac.png'
+        image = color.rgb2gray(io.imread(path))
+        # calculate
+        fast = image.max() - p
+        # load
+        raze = image <= fast
+        image = np.where(raze, 0, image)
+        gosh = np.where(image >= fast)
 
 
-
-
+        log.info('Поиск центроидов окончен')
 
 
 app = QtWidgets.QApplication(sys.argv)
