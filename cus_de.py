@@ -89,8 +89,11 @@ class Ui(QtWidgets.QMainWindow):
         #     D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
         #     D_vector = math.sqrt(D_vector) * caff
         #     DD_vector.append(D_vector)
-        #     if D_vector >= rz_x:
+        #     if D_vector <= rz_x:
         #         self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+
+        for n, contour in enumerate(contours):
+            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot.draw_idle()
         # max_DD_v, min_DD_v = max(DD_vector), min(DD_vector)
@@ -139,7 +142,6 @@ class Ui(QtWidgets.QMainWindow):
             vis = KElbowVisualizer(model, k=(1, 15))
             vis.fit(np.array(z))
 
-            contours = measure.find_contours(img, 0.5)
 
             k = KMeans(n_clusters=vis.elbow_value_).fit(z)
 
@@ -167,12 +169,15 @@ class Ui(QtWidgets.QMainWindow):
                 if D_vector <= rz_x:
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
+
+                    img[aaa[:, 0], aaa[:, 1]] = 0
                     hhhhh = hhhhh - 1
 
-            print(DD_vector)
+
             if len(z) > 0:
                 k = KMeans(n_clusters=hhhhh).fit(z)
 
+                contours = measure.find_contours(img, 0.5)
                 x_t = list(k.cluster_centers_[:, 0])
                 y_t = list(k.cluster_centers_[:, 1])
             else:
