@@ -16,9 +16,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
-array_x_t = []
-array_y_t = []
-
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -31,7 +28,6 @@ class Ui(QtWidgets.QMainWindow):
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
         # Размер
         self.input_x = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox')
-
         # label
         self.label_max = self.findChild(QtWidgets.QLabel, 'label_3')
         self.label_min = self.findChild(QtWidgets.QLabel, 'label_4')
@@ -61,14 +57,15 @@ class Ui(QtWidgets.QMainWindow):
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, caff, centroids = self.f_dir(d=self.directory,
-                                                                                 p=float(
-                                                                                     self.input_2.text().replace(',',
-                                                                                                                 '.')),
-                                                                                 od=self.output_dir,
-                                                                                 vn=self.video_name,
-                                                                                 fd=self.fileid,
-                                                                                 rz_x=rz_x)
+        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(d=self.directory,
+                                                                                     p=float(
+                                                                                         self.input_2.text().replace(
+                                                                                             ',',
+                                                                                             '.')),
+                                                                                     od=self.output_dir,
+                                                                                     vn=self.video_name,
+                                                                                     fd=self.fileid,
+                                                                                     rz_x=rz_x)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -82,32 +79,40 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.scatter(y_t, x_t, s=5, c='red')
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
-        for n, contour in enumerate(contours):
-            A_Xmin = min(contour[:, 0])
-            A_Ymax = max(contour[:, 1])
+        # DD_vector = []
+        # for n, contour in enumerate(contours):
+        #     A_Xmin = min(contour[:, 0])
+        #     A_Ymax = max(contour[:, 1])
+        #
+        #     B_Xmax = max(contour[:, 0])
+        #     B_Ymin = min(contour[:, 1])
+        #     D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+        #     D_vector = math.sqrt(D_vector) * caff
+        #     DD_vector.append(D_vector)
+        #     if D_vector <= rz_x:
+        #         self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
-            B_Xmax = max(contour[:, 0])
-            B_Ymin = min(contour[:, 1])
-            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
-            D_vector = math.sqrt(D_vector) * caff
-            if D_vector >= rz_x:
-                self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+        for n, contour in enumerate(contours):
+            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot.draw_idle()
+        # max_DD_v, min_DD_v = max(DD_vector), min(DD_vector)
+        # self.label_max.setText('Максимальная гломерула - {} мкм'.format(str(max_DD_v)))
+        # self.label_min.setText('Минимальная гломерула - {} мкм'.format(str(min_DD_v)))
 
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
         rz_y = float(self.input_y.text().replace(',', '.'))
 
         img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
-                                                                                 p=float(
-                                                                                     self.input_2.text().replace(',',
-                                                                                                                 '.')),
-                                                                                 od=self.output_dir,
-                                                                                 vn=self.video_name,
-                                                                                 fd=self.fileid,
-                                                                                 rz_x=rz_x,
-                                                                                 rz_y=rz_y)
+                                                                                p=float(
+                                                                                    self.input_2.text().replace(',',
+                                                                                                                '.')),
+                                                                                od=self.output_dir,
+                                                                                vn=self.video_name,
+                                                                                fd=self.fileid,
+                                                                                rz_x=rz_x,
+                                                                                rz_y=rz_y)
 
         df = []
         for c in contours:
@@ -125,6 +130,8 @@ class Ui(QtWidgets.QMainWindow):
         y = g[1]
         # Если имеется массив центроидов
         if len(x) > 0 and len(y) > 0:
+            x_t = []
+            y_t = []
             mkm_width, caff = self.rz(1214.6, img, rz_x)
 
             # zip (..., ..., img[x, y])
@@ -135,14 +142,48 @@ class Ui(QtWidgets.QMainWindow):
             vis = KElbowVisualizer(model, k=(1, 15))
             vis.fit(np.array(z))
 
-            contours = measure.find_contours(img, 0.5)
 
             k = KMeans(n_clusters=vis.elbow_value_).fit(z)
-            x_t = list(k.cluster_centers_[:, 0])
-            y_t = list(k.cluster_centers_[:, 1])
 
-            array_x_t.append(x_t)
-            array_y_t.append(y_t)
+            # [[z[i] for i in range(len(k.labels_))]]
+            # arrayp = [for j in range(len() if j == k.labels_ [z[i] for i in range(len(k.labels_))]]
+            arrayp = [[0]]* len(k.cluster_centers_)
+            for d, c in enumerate(arrayp):
+                kkk = []
+                for i, m in enumerate(k.labels_):
+                    if m == d:
+                        kkk.append(z[i])
+                arrayp[d] = np.array(kkk)
+
+            hhhhh = len(k.cluster_centers_)
+            DD_vector = []
+            for n, aaa in enumerate(arrayp):
+                A_Xmin = min(aaa[:, 0])
+                A_Ymax = max(aaa[:, 1])
+
+                B_Xmax = max(aaa[:, 0])
+                B_Ymin = min(aaa[:, 1])
+                D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+                D_vector = math.sqrt(D_vector) * caff
+                DD_vector.append(D_vector)
+                if D_vector <= rz_x:
+                    g = aaa[:].tolist()
+                    z = [s for s in z if s not in g]
+
+                    img[aaa[:, 0], aaa[:, 1]] = 0
+                    hhhhh = hhhhh - 1
+
+
+            if len(z) > 0:
+                k = KMeans(n_clusters=hhhhh).fit(z)
+
+                contours = measure.find_contours(img, 0.5)
+                x_t = list(k.cluster_centers_[:, 0])
+                y_t = list(k.cluster_centers_[:, 1])
+            else:
+                self.label_max.setText('Заданный размер слишком высок')
+
+
             log.info('Параметр порога - {}'.format(parametr_p))
 
             return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
@@ -153,9 +194,7 @@ class Ui(QtWidgets.QMainWindow):
         iw, ih = img.shape[0], img.shape[1]
         # поиск сколько приходится на 1 пиксель мкм
         caff = mkm / iw
-
         mkm_width = round(caff * rz_x)
-
         return mkm_width, caff
 
     def f_dir(self, d, p, od, vn, fd, rz_x):
@@ -176,8 +215,9 @@ class Ui(QtWidgets.QMainWindow):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= fast)
 
-
+        fig = self.km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
         log.info('Поиск центроидов окончен')
+        return fig
 
 
 app = QtWidgets.QApplication(sys.argv)
