@@ -5,16 +5,15 @@ import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import math
-
 from skimage import measure, color, io
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
-
 import logging
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
+
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -79,26 +78,11 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.scatter(y_t, x_t, s=5, c='red')
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
-        # DD_vector = []
-        # for n, contour in enumerate(contours):
-        #     A_Xmin = min(contour[:, 0])
-        #     A_Ymax = max(contour[:, 1])
-        #
-        #     B_Xmax = max(contour[:, 0])
-        #     B_Ymin = min(contour[:, 1])
-        #     D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
-        #     D_vector = math.sqrt(D_vector) * caff
-        #     DD_vector.append(D_vector)
-        #     if D_vector <= rz_x:
-        #         self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         for n, contour in enumerate(contours):
             self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
         self.plot.draw_idle()
-        # max_DD_v, min_DD_v = max(DD_vector), min(DD_vector)
-        # self.label_max.setText('Максимальная гломерула - {} мкм'.format(str(max_DD_v)))
-        # self.label_min.setText('Минимальная гломерула - {} мкм'.format(str(min_DD_v)))
 
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
@@ -123,9 +107,6 @@ class Ui(QtWidgets.QMainWindow):
         np.savetxt('centroids.csv', centroids, delimiter=',')
 
     def km(self, img, number, g, dr, opa, parametr_p, rz_x):
-        # plt.cla()
-        # plt.clf()
-
         x = g[0]
         y = g[1]
         # Если имеется массив центроидов
@@ -142,12 +123,9 @@ class Ui(QtWidgets.QMainWindow):
             vis = KElbowVisualizer(model, k=(1, 15))
             vis.fit(np.array(z))
 
-
             k = KMeans(n_clusters=vis.elbow_value_).fit(z)
 
-            # [[z[i] for i in range(len(k.labels_))]]
-            # arrayp = [for j in range(len() if j == k.labels_ [z[i] for i in range(len(k.labels_))]]
-            arrayp = [[0]]* len(k.cluster_centers_)
+            arrayp = [[0]] * len(k.cluster_centers_)
             for d, c in enumerate(arrayp):
                 kkk = []
                 for i, m in enumerate(k.labels_):
@@ -169,10 +147,8 @@ class Ui(QtWidgets.QMainWindow):
                 if D_vector <= rz_x:
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
-
                     img[aaa[:, 0], aaa[:, 1]] = 0
                     hhhhh = hhhhh - 1
-
 
             if len(z) > 0:
                 k = KMeans(n_clusters=hhhhh).fit(z)
@@ -182,7 +158,6 @@ class Ui(QtWidgets.QMainWindow):
                 y_t = list(k.cluster_centers_[:, 1])
             else:
                 self.label_max.setText('Заданный размер слишком высок')
-
 
             log.info('Параметр порога - {}'.format(parametr_p))
 
