@@ -22,7 +22,11 @@ class Ui(QtWidgets.QMainWindow):
         self.setWindowTitle('Автоматическая детекция гломерул обонятельной луковицы')
         self.button = self.findChild(QtWidgets.QPushButton, 'pushButton')
         self.button_exp = self.findChild(QtWidgets.QPushButton, 'pushButton_2')
+        self.button_file = self.findChild(QtWidgets.QPushButton, 'pushButton_3')
 
+        self.file = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                          "Выберите файл",
+                                                          filter="(*.png *.jpg *.tiff)")[0]
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
         # Размер
@@ -51,6 +55,14 @@ class Ui(QtWidgets.QMainWindow):
 
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
+        self.button_file.clicked.connect(self.open_file)
+
+        self.update_chart()
+
+    def open_file(self):
+        self.file = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                          "Выберите файл",
+                                                          filter="(*.png *.jpg *.tiff)")[0]
         self.update_chart()
 
     def update_chart(self):
@@ -64,7 +76,8 @@ class Ui(QtWidgets.QMainWindow):
                                                                                      od=self.output_dir,
                                                                                      vn=self.video_name,
                                                                                      fd=self.fileid,
-                                                                                     rz_x=rz_x)
+                                                                                     rz_x=rz_x,
+                                                                                     file=self.file)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -86,7 +99,6 @@ class Ui(QtWidgets.QMainWindow):
 
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
-        rz_y = float(self.input_y.text().replace(',', '.'))
 
         img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
                                                                                 p=float(
@@ -96,7 +108,7 @@ class Ui(QtWidgets.QMainWindow):
                                                                                 vn=self.video_name,
                                                                                 fd=self.fileid,
                                                                                 rz_x=rz_x,
-                                                                                rz_y=rz_y)
+                                                                                file=self.file)
 
         df = []
         for c in contours:
@@ -150,10 +162,10 @@ class Ui(QtWidgets.QMainWindow):
                     img[aaa[:, 0], aaa[:, 1]] = 0
                     hhhhh = hhhhh - 1
 
+            contours = measure.find_contours(img, 0.5)
             if len(z) > 0:
                 k = KMeans(n_clusters=hhhhh).fit(z)
 
-                contours = measure.find_contours(img, 0.5)
                 x_t = list(k.cluster_centers_[:, 0])
                 y_t = list(k.cluster_centers_[:, 1])
             else:
@@ -172,7 +184,7 @@ class Ui(QtWidgets.QMainWindow):
         mkm_width = round(caff * rz_x)
         return mkm_width, caff
 
-    def f_dir(self, d, p, od, vn, fd, rz_x):
+    def f_dir(self, d, p, od, vn, fd, rz_x, file):
         # log.info('Сканирование директории для исследования - %s', d)
         # remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
         # sort_list = sorted(remove_ds_store)
@@ -181,8 +193,7 @@ class Ui(QtWidgets.QMainWindow):
         log.info('Поиск центроидов начат')
 
         # ЧБ
-        path = 'konstantin/2019.10.02 ФИ-59/2019.10.02_actReg/2019.10.02_2/B2 97_ac.png'
-        image = color.rgb2gray(io.imread(path))
+        image = color.rgb2gray(io.imread(file))
         # calculate
         fast = image.max() - p
         # load
