@@ -180,15 +180,13 @@ class Ui(QtWidgets.QMainWindow):
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
                     img[aaa[:, 0], aaa[:, 1]] = 0
+                else:
                     hhhhh = hhhhh - 1
-            log.info("img === %s", DD_vector)
+            log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
 
             contours = measure.find_contours(img, number)
             # for n, contour in enumerate(contours):
             #     self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2)
-
-
-
 
             if len(z) > 0:
                 k = KMeans(n_clusters=hhhhh).fit(z)
