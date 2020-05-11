@@ -14,6 +14,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
+version = '1.0.3 beta'
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -27,6 +28,7 @@ class Ui(QtWidgets.QMainWindow):
         self.file = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "Выберите файл",
                                                           filter="(*.png *.jpg *.tiff)")[0]
+
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
         # Размер
@@ -34,6 +36,9 @@ class Ui(QtWidgets.QMainWindow):
         # label
         self.label_max = self.findChild(QtWidgets.QLabel, 'label_3')
         self.label_min = self.findChild(QtWidgets.QLabel, 'label_4')
+        # ver
+        self.lab_ver = self.findChild(QtWidgets.QLabel, 'label_5')
+        self.lab_ver.setText(version)
 
         self.directory = "2020-2/A4 98 um 20200325/"
         self.output_dir = 'a11'
@@ -63,7 +68,10 @@ class Ui(QtWidgets.QMainWindow):
         self.file = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "Выберите файл",
                                                           filter="(*.png *.jpg *.tiff)")[0]
-        self.update_chart()
+        if len(self.file) > 0:
+            self.update_chart()
+        else:
+            return
 
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
@@ -92,9 +100,21 @@ class Ui(QtWidgets.QMainWindow):
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
 
+        DD_vector = []
         for n, contour in enumerate(contours):
-            self.axes2.plot(contour[:, 0], contour[:, 1], linewidth=2)
+            A_Xmin = min(contour[:, 0])
+            A_Ymax = max(contour[:, 1])
 
+            B_Xmax = max(contour[:, 0])
+            B_Ymin = min(contour[:, 1])
+            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+            D_vector = math.sqrt(D_vector) * caff
+            DD_vector.append(D_vector)
+        log.info("cont === %s", DD_vector)
+
+
+
+        self.axes2.invert_yaxis()
         self.plot.draw_idle()
 
     def export_csv(self):
@@ -156,13 +176,20 @@ class Ui(QtWidgets.QMainWindow):
                 D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
                 D_vector = math.sqrt(D_vector) * caff
                 DD_vector.append(D_vector)
-                if D_vector <= rz_x:
+                if D_vector >= rz_x:
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
                     img[aaa[:, 0], aaa[:, 1]] = 0
                     hhhhh = hhhhh - 1
+            log.info("img === %s", DD_vector)
 
-            contours = measure.find_contours(img, 0.5)
+            contours = measure.find_contours(img, number)
+            # for n, contour in enumerate(contours):
+            #     self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2)
+
+
+
+
             if len(z) > 0:
                 k = KMeans(n_clusters=hhhhh).fit(z)
 
@@ -185,23 +212,20 @@ class Ui(QtWidgets.QMainWindow):
         return mkm_width, caff
 
     def f_dir(self, d, p, od, vn, fd, rz_x, file):
-        # log.info('Сканирование директории для исследования - %s', d)
-        # remove_ds_store = [name for name in os.listdir(d) if not name.startswith(('.', 'ORG'))]
-        # sort_list = sorted(remove_ds_store)
-        # log.info('Найдено %s образца', len(sort_list))
-
         log.info('Поиск центроидов начат')
+
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
+        np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
         # calculate
-        fast = image.max() - p
+        # fast = image.max() - p
         # load
-        raze = image <= fast
+        raze = image <= p
         image = np.where(raze, 0, image)
-        gosh = np.where(image >= fast)
+        gosh = np.where(image >= p)
 
-        fig = self.km(image, number=91001, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
+        fig = self.km(image, number=p, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
         log.info('Поиск центроидов окончен')
         return fig
 
