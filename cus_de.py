@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5 import uic
 import sys
 import numpy as np
@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 version = '1.0.3 beta'
 
+
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -27,7 +28,17 @@ class Ui(QtWidgets.QMainWindow):
 
         self.file = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "Выберите файл",
+                                                          None,
                                                           filter="(*.png *.jpg *.tiff)")[0]
+        log.info(self.file)
+        if not self.file:
+            rep = QtWidgets.QMessageBox.question(self,'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
+                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                           QtWidgets.QMessageBox.Yes)
+            if rep == QtWidgets.QMessageBox.Yes:
+                self.open_file()
+            else:
+                return
 
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
@@ -47,7 +58,7 @@ class Ui(QtWidgets.QMainWindow):
 
         # self.addToolBar(QtCore.Qt.TopToolBarArea, QtWidgets.QToolBarNavigationToolbar(self.plot, self))
 
-        self.fig = Figure(figsize=(8, 3), dpi=100)
+        self.fig = Figure(figsize=(10, 4), dpi=100)
         self.axes = self.fig.add_subplot(131)
         self.axes1 = self.fig.add_subplot(132)
         self.axes2 = self.fig.add_subplot(133)
@@ -97,6 +108,14 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.imshow(img)
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
+
+        self.axes.set_xlabel('px', fontsize=8)
+        self.axes.set_ylabel('px', fontsize=8)
+        self.axes1.set_xlabel('px', fontsize=8)
+        self.axes1.set_ylabel('px', fontsize=8)
+        self.axes2.set_xlabel('px', fontsize=8)
+        self.axes2.set_ylabel('px', fontsize=8)
+
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
 
@@ -113,10 +132,8 @@ class Ui(QtWidgets.QMainWindow):
             self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2, color='red')
         log.info("cont === %s", DD_vector)
 
-
-
-
         self.axes2.invert_yaxis()
+        self.fig.tight_layout()
         self.plot.draw_idle()
 
     def export_csv(self):
@@ -182,8 +199,7 @@ class Ui(QtWidgets.QMainWindow):
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
                     img[aaa[:, 0], aaa[:, 1]] = 0
-                    hhhhh = hhhhh - 1
-
+                    # hhhhh = hhhhh - 1
 
             log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
 
