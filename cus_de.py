@@ -3,6 +3,7 @@ from PyQt5 import uic
 import sys
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NT
 from matplotlib.figure import Figure
 import math
 from skimage import measure, color, io
@@ -56,7 +57,7 @@ class Ui(QtWidgets.QMainWindow):
         self.video_name = '1.avi'
         self.fileid = 'video.zip'
 
-        # self.addToolBar(QtCore.Qt.TopToolBarArea, QtWidgets.QToolBarNavigationToolbar(self.plot, self))
+
 
         self.fig = Figure(figsize=(10, 4), dpi=100)
         self.axes = self.fig.add_subplot(131)
@@ -72,6 +73,9 @@ class Ui(QtWidgets.QMainWindow):
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
         self.button_file.clicked.connect(self.open_file)
+
+
+        self.addToolBar(QtCore.Qt.TopToolBarArea, NT(self.plot, self))
 
         self.update_chart()
 
