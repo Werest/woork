@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5 import uic
 import sys
 import numpy as np
@@ -45,7 +45,7 @@ class Ui(QtWidgets.QMainWindow):
         self.video_name = '1.avi'
         self.fileid = 'video.zip'
 
-        # self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plot, self))
+        # self.addToolBar(QtCore.Qt.TopToolBarArea, QtWidgets.QToolBarNavigationToolbar(self.plot, self))
 
         self.fig = Figure(figsize=(8, 3), dpi=100)
         self.axes = self.fig.add_subplot(131)
@@ -107,10 +107,12 @@ class Ui(QtWidgets.QMainWindow):
 
             B_Xmax = max(contour[:, 0])
             B_Ymin = min(contour[:, 1])
-            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2) - 1
             D_vector = math.sqrt(D_vector) * caff
             DD_vector.append(D_vector)
+            self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2, color='red')
         log.info("cont === %s", DD_vector)
+
 
 
 
@@ -176,12 +178,13 @@ class Ui(QtWidgets.QMainWindow):
                 D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
                 D_vector = math.sqrt(D_vector) * caff
                 DD_vector.append(D_vector)
-                if D_vector >= rz_x:
+                if D_vector <= rz_x:
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
                     img[aaa[:, 0], aaa[:, 1]] = 0
-                else:
                     hhhhh = hhhhh - 1
+
+
             log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
 
             contours = measure.find_contours(img, number)
@@ -211,7 +214,6 @@ class Ui(QtWidgets.QMainWindow):
 
     def f_dir(self, d, p, od, vn, fd, rz_x, file):
         log.info('Поиск центроидов начат')
-
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
