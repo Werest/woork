@@ -1,8 +1,9 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5 import uic
 import sys
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NT
 from matplotlib.figure import Figure
 import math
 from skimage import measure, color, io
@@ -16,6 +17,7 @@ log = logging.getLogger(__name__)
 
 version = '1.0.3 beta'
 
+
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -27,7 +29,17 @@ class Ui(QtWidgets.QMainWindow):
 
         self.file = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "Выберите файл",
+                                                          None,
                                                           filter="(*.png *.jpg *.tiff)")[0]
+        log.info(self.file)
+        if not self.file:
+            rep = QtWidgets.QMessageBox.question(self,'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
+                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                           QtWidgets.QMessageBox.Yes)
+            if rep == QtWidgets.QMessageBox.Yes:
+                self.open_file()
+            else:
+                return
 
         # Порог
         self.input_2 = self.findChild(QtWidgets.QDoubleSpinBox, 'doubleSpinBox_2')
@@ -45,9 +57,9 @@ class Ui(QtWidgets.QMainWindow):
         self.video_name = '1.avi'
         self.fileid = 'video.zip'
 
-        # self.addToolBar(QtCore.Qt.TopToolBarArea, NavigationToolbar(self.plot, self))
 
-        self.fig = Figure(figsize=(8, 3), dpi=100)
+
+        self.fig = Figure(figsize=(10, 4), dpi=100)
         self.axes = self.fig.add_subplot(131)
         self.axes1 = self.fig.add_subplot(132)
         self.axes2 = self.fig.add_subplot(133)
@@ -61,6 +73,9 @@ class Ui(QtWidgets.QMainWindow):
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
         self.button_file.clicked.connect(self.open_file)
+
+
+        self.addToolBar(QtCore.Qt.TopToolBarArea, NT(self.plot, self))
 
         self.update_chart()
 
@@ -97,6 +112,14 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.imshow(img)
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
+
+        self.axes.set_xlabel('px', fontsize=8)
+        self.axes.set_ylabel('px', fontsize=8)
+        self.axes1.set_xlabel('px', fontsize=8)
+        self.axes1.set_ylabel('px', fontsize=8)
+        self.axes2.set_xlabel('px', fontsize=8)
+        self.axes2.set_ylabel('px', fontsize=8)
+
         # длина вектора по координатам
         # AB = sqrt (bx - ax)^2 + (by-ay)^2
 
@@ -107,14 +130,14 @@ class Ui(QtWidgets.QMainWindow):
 
             B_Xmax = max(contour[:, 0])
             B_Ymin = min(contour[:, 1])
-            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
+            D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2) - 1
             D_vector = math.sqrt(D_vector) * caff
             DD_vector.append(D_vector)
+            self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2, color='red')
         log.info("cont === %s", DD_vector)
 
-
-
         self.axes2.invert_yaxis()
+        self.fig.tight_layout()
         self.plot.draw_idle()
 
     def export_csv(self):
@@ -176,12 +199,12 @@ class Ui(QtWidgets.QMainWindow):
                 D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2)
                 D_vector = math.sqrt(D_vector) * caff
                 DD_vector.append(D_vector)
-                if D_vector >= rz_x:
+                if D_vector <= rz_x:
                     g = aaa[:].tolist()
                     z = [s for s in z if s not in g]
                     img[aaa[:, 0], aaa[:, 1]] = 0
-                else:
-                    hhhhh = hhhhh - 1
+                    # hhhhh = hhhhh - 1
+
             log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
 
             contours = measure.find_contours(img, number)
@@ -211,7 +234,6 @@ class Ui(QtWidgets.QMainWindow):
 
     def f_dir(self, d, p, od, vn, fd, rz_x, file):
         log.info('Поиск центроидов начат')
-
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
