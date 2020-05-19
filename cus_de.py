@@ -10,6 +10,7 @@ from skimage import measure, color, io
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
 import logging
+import pandas as pd
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                     , level=logging.INFO)
@@ -131,7 +132,7 @@ class Ui(QtWidgets.QMainWindow):
             B_Xmax = max(contour[:, 0])
             B_Ymin = min(contour[:, 1])
             D_vector = pow((B_Xmax - A_Xmin), 2) + pow((B_Ymin - A_Ymax), 2) - 1
-            D_vector = math.sqrt(D_vector) * caff
+            # D_vector = math.sqrt(D_vector) * caff
             DD_vector.append(D_vector)
             self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2, color='red')
         log.info("cont === %s", DD_vector)
@@ -158,8 +159,9 @@ class Ui(QtWidgets.QMainWindow):
             for k in c:
                 df.append(k)
 
-        np.savetxt('contours.csv', df, delimiter=',')
-        np.savetxt('centroids.csv', centroids, delimiter=',')
+        pd.DataFrame(df).to_excel('contours.xlsx', index=False)
+        pd.DataFrame(centroids).to_excel('centroids.xlsx', index=False)
+
 
     def km(self, img, number, g, dr, opa, parametr_p, rz_x):
         x = g[0]
@@ -206,7 +208,7 @@ class Ui(QtWidgets.QMainWindow):
                     # hhhhh = hhhhh - 1
 
             log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
-
+            # self.label_max.text()
             contours = measure.find_contours(img, number)
             # for n, contour in enumerate(contours):
             #     self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2)
