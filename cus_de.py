@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
-version = '1.0.4 beta'
+version = '1.0.5 beta'
 
 
 class Ui(QtWidgets.QMainWindow):
