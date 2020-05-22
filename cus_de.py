@@ -239,7 +239,7 @@ class Ui(QtWidgets.QMainWindow):
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
-        np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
+        # np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
         # calculate
         # fast = image.max() - p
         # load
