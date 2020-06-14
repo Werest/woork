@@ -34,9 +34,9 @@ class Ui(QtWidgets.QMainWindow):
                                                           filter="(*.png *.jpg *.tiff)")[0]
         log.info(self.file)
         if not self.file:
-            rep = QtWidgets.QMessageBox.question(self,'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
-                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                           QtWidgets.QMessageBox.Yes)
+            rep = QtWidgets.QMessageBox.question(self, 'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
+                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                 QtWidgets.QMessageBox.Yes)
             if rep == QtWidgets.QMessageBox.Yes:
                 self.open_file()
             else:
@@ -53,13 +53,6 @@ class Ui(QtWidgets.QMainWindow):
         self.lab_ver = self.findChild(QtWidgets.QLabel, 'label_5')
         self.lab_ver.setText(version)
 
-        self.directory = "2020-2/A4 98 um 20200325/"
-        self.output_dir = 'a11'
-        self.video_name = '1.avi'
-        self.fileid = 'video.zip'
-
-
-
         self.fig = Figure(figsize=(10, 4), dpi=100)
         self.axes = self.fig.add_subplot(131)
         self.axes1 = self.fig.add_subplot(132)
@@ -74,7 +67,6 @@ class Ui(QtWidgets.QMainWindow):
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
         self.button_file.clicked.connect(self.open_file)
-
 
         self.addToolBar(QtCore.Qt.TopToolBarArea, NT(self.plot, self))
 
@@ -162,7 +154,6 @@ class Ui(QtWidgets.QMainWindow):
         pd.DataFrame(df).to_excel('contours.xlsx', index=False)
         pd.DataFrame(centroids).to_excel('centroids.xlsx', index=False)
 
-
     def km(self, img, number, g, dr, opa, parametr_p, rz_x):
         x = g[0]
         y = g[1]
@@ -222,7 +213,6 @@ class Ui(QtWidgets.QMainWindow):
                 self.label_max.setText('Заданный размер слишком высок')
 
             log.info('Параметр порога - {}'.format(parametr_p))
-
             return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
         else:
             log.info("Не можем определить центроиды")
@@ -239,6 +229,10 @@ class Ui(QtWidgets.QMainWindow):
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
+        # pltt.clf()
+        # pltt.imshow(image)
+        # pltt.savefig('1.png')
+        # pltt.clf()
         # np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
         # calculate
         # fast = image.max() - p
