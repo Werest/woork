@@ -84,14 +84,12 @@ class Ui(QtWidgets.QMainWindow):
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(d=self.directory,
+        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(
                                                                                      p=float(
                                                                                          self.input_2.text().replace(
                                                                                              ',',
                                                                                              '.')),
-                                                                                     od=self.output_dir,
-                                                                                     vn=self.video_name,
-                                                                                     fd=self.fileid,
+
                                                                                      rz_x=rz_x,
                                                                                      file=self.file)
         self.axes.cla()
@@ -105,6 +103,7 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.imshow(img)
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
+
 
         self.axes.set_xlabel('px', fontsize=8)
         self.axes.set_ylabel('px', fontsize=8)
@@ -136,13 +135,10 @@ class Ui(QtWidgets.QMainWindow):
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(
                                                                                 p=float(
                                                                                     self.input_2.text().replace(',',
                                                                                                                 '.')),
-                                                                                od=self.output_dir,
-                                                                                vn=self.video_name,
-                                                                                fd=self.fileid,
                                                                                 rz_x=rz_x,
                                                                                 file=self.file)
 
@@ -154,9 +150,15 @@ class Ui(QtWidgets.QMainWindow):
         pd.DataFrame(df).to_excel('contours.xlsx', index=False)
         pd.DataFrame(centroids).to_excel('centroids.xlsx', index=False)
 
-    def km(self, img, number, g, dr, opa, parametr_p, rz_x):
+    def km(self, img, number, g, parametr_p, rz_x):
         x = g[0]
         y = g[1]
+        # for testing
+        pd.DataFrame(img).to_csv('datatest/A1 97_ac.csv', index=False, header=False)
+        np.savetxt('datatest/A1 97_ac_x.txt', x)
+        np.savetxt('datatest/A1 97_ac_y.txt', y)
+
+
         # Если имеется массив центроидов
         if len(x) > 0 and len(y) > 0:
             x_t = []
@@ -224,7 +226,7 @@ class Ui(QtWidgets.QMainWindow):
         mkm_width = round(caff * rz_x)
         return mkm_width, caff
 
-    def f_dir(self, d, p, od, vn, fd, rz_x, file):
+    def f_dir(self, p, rz_x, file):
         log.info('Поиск центроидов начат')
 
         # ЧБ
@@ -241,7 +243,7 @@ class Ui(QtWidgets.QMainWindow):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= p)
 
-        fig = self.km(image, number=p, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
+        fig = self.km(image, number=p, g=gosh, parametr_p=p, rz_x=rz_x)
         log.info('Поиск центроидов окончен')
         return fig
 
