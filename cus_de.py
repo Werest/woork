@@ -34,9 +34,9 @@ class Ui(QtWidgets.QMainWindow):
                                                           filter="(*.png *.jpg *.tiff)")[0]
         log.info(self.file)
         if not self.file:
-            rep = QtWidgets.QMessageBox.question(self,'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
-                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                           QtWidgets.QMessageBox.Yes)
+            rep = QtWidgets.QMessageBox.question(self, 'Предупреждение', 'Вы не выбрали файл. Выбрать снова?',
+                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                 QtWidgets.QMessageBox.Yes)
             if rep == QtWidgets.QMessageBox.Yes:
                 self.open_file()
             else:
@@ -53,13 +53,6 @@ class Ui(QtWidgets.QMainWindow):
         self.lab_ver = self.findChild(QtWidgets.QLabel, 'label_5')
         self.lab_ver.setText(version)
 
-        self.directory = "2020-2/A4 98 um 20200325/"
-        self.output_dir = 'a11'
-        self.video_name = '1.avi'
-        self.fileid = 'video.zip'
-
-
-
         self.fig = Figure(figsize=(10, 4), dpi=100)
         self.axes = self.fig.add_subplot(131)
         self.axes1 = self.fig.add_subplot(132)
@@ -74,7 +67,6 @@ class Ui(QtWidgets.QMainWindow):
         self.button_exp.clicked.connect(self.export_csv)
         self.button.clicked.connect(self.update_chart)
         self.button_file.clicked.connect(self.open_file)
-
 
         self.addToolBar(QtCore.Qt.TopToolBarArea, NT(self.plot, self))
 
@@ -92,14 +84,12 @@ class Ui(QtWidgets.QMainWindow):
     def update_chart(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(d=self.directory,
+        img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(
                                                                                      p=float(
                                                                                          self.input_2.text().replace(
                                                                                              ',',
                                                                                              '.')),
-                                                                                     od=self.output_dir,
-                                                                                     vn=self.video_name,
-                                                                                     fd=self.fileid,
+
                                                                                      rz_x=rz_x,
                                                                                      file=self.file)
         self.axes.cla()
@@ -113,6 +103,7 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.imshow(img)
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
+
 
         self.axes.set_xlabel('px', fontsize=8)
         self.axes.set_ylabel('px', fontsize=8)
@@ -144,13 +135,10 @@ class Ui(QtWidgets.QMainWindow):
     def export_csv(self):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
-        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(d=self.directory,
+        img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(
                                                                                 p=float(
                                                                                     self.input_2.text().replace(',',
                                                                                                                 '.')),
-                                                                                od=self.output_dir,
-                                                                                vn=self.video_name,
-                                                                                fd=self.fileid,
                                                                                 rz_x=rz_x,
                                                                                 file=self.file)
 
@@ -162,10 +150,15 @@ class Ui(QtWidgets.QMainWindow):
         pd.DataFrame(df).to_excel('contours.xlsx', index=False)
         pd.DataFrame(centroids).to_excel('centroids.xlsx', index=False)
 
-
-    def km(self, img, number, g, dr, opa, parametr_p, rz_x):
+    def km(self, img, number, g, parametr_p, rz_x):
         x = g[0]
         y = g[1]
+        # for testing
+        pd.DataFrame(img).to_csv('datatest/A1 97_ac.csv', index=False, header=False)
+        np.savetxt('datatest/A1 97_ac_x.txt', x)
+        np.savetxt('datatest/A1 97_ac_y.txt', y)
+
+
         # Если имеется массив центроидов
         if len(x) > 0 and len(y) > 0:
             x_t = []
@@ -222,7 +215,6 @@ class Ui(QtWidgets.QMainWindow):
                 self.label_max.setText('Заданный размер слишком высок')
 
             log.info('Параметр порога - {}'.format(parametr_p))
-
             return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
         else:
             log.info("Не можем определить центроиды")
@@ -234,12 +226,16 @@ class Ui(QtWidgets.QMainWindow):
         mkm_width = round(caff * rz_x)
         return mkm_width, caff
 
-    def f_dir(self, d, p, od, vn, fd, rz_x, file):
+    def f_dir(self, p, rz_x, file):
         log.info('Поиск центроидов начат')
 
         # ЧБ
         image = color.rgb2gray(io.imread(file))
-        np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
+        # pltt.clf()
+        # pltt.imshow(image)
+        # pltt.savefig('1.png')
+        # pltt.clf()
+        # np.savetxt('g.csv', image, delimiter=',', fmt='%.5f')
         # calculate
         # fast = image.max() - p
         # load
@@ -247,7 +243,7 @@ class Ui(QtWidgets.QMainWindow):
         image = np.where(raze, 0, image)
         gosh = np.where(image >= p)
 
-        fig = self.km(image, number=p, g=gosh, dr=od, opa=d, parametr_p=p, rz_x=rz_x)
+        fig = self.km(image, number=p, g=gosh, parametr_p=p, rz_x=rz_x)
         log.info('Поиск центроидов окончен')
         return fig
 
