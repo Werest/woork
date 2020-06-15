@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     , level=logging.INFO)
 log = logging.getLogger(__name__)
 
-version = '1.0.5 beta'
+version = '1.0.6 beta'
 
 
 class Ui(QtWidgets.QMainWindow):
@@ -85,13 +85,13 @@ class Ui(QtWidgets.QMainWindow):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
         img, contours, y_t, x_t, parametr_p, mkm_width, caff, centroids = self.f_dir(
-                                                                                     p=float(
-                                                                                         self.input_2.text().replace(
-                                                                                             ',',
-                                                                                             '.')),
+            p=float(
+                self.input_2.text().replace(
+                    ',',
+                    '.')),
 
-                                                                                     rz_x=rz_x,
-                                                                                     file=self.file)
+            rz_x=rz_x,
+            file=self.file)
         self.axes.cla()
         self.axes1.cla()
         self.axes2.cla()
@@ -103,7 +103,7 @@ class Ui(QtWidgets.QMainWindow):
         self.axes.imshow(img)
         self.axes1.imshow(img)
         self.axes.scatter(y_t, x_t, s=5, c='red')
-
+        self.axes2.scatter(y_t, x_t, s=5, c='red')
 
         self.axes.set_xlabel('px', fontsize=8)
         self.axes.set_ylabel('px', fontsize=8)
@@ -136,11 +136,11 @@ class Ui(QtWidgets.QMainWindow):
         rz_x = float(self.input_x.text().replace(',', '.'))
 
         img, contours, y_t, x_t, parametr_p, rz_x, rz_y, centroids = self.f_dir(
-                                                                                p=float(
-                                                                                    self.input_2.text().replace(',',
-                                                                                                                '.')),
-                                                                                rz_x=rz_x,
-                                                                                file=self.file)
+            p=float(
+                self.input_2.text().replace(',',
+                                            '.')),
+            rz_x=rz_x,
+            file=self.file)
 
         df = []
         for c in contours:
