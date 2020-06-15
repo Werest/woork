@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NT
 from matplotlib.figure import Figure
 import math
 from skimage import measure, color, io
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MeanShift
 from yellowbrick.cluster import KElbowVisualizer
 import logging
 import pandas as pd
@@ -147,17 +147,12 @@ class Ui(QtWidgets.QMainWindow):
             for k in c:
                 df.append(k)
 
-        pd.DataFrame(df).to_excel('contours.xlsx', index=False)
-        pd.DataFrame(centroids).to_excel('centroids.xlsx', index=False)
+        pd.DataFrame(df, columns=['X', 'Y']).to_excel('contours.xlsx', index=False)
+        pd.DataFrame(centroids, columns=['X', 'Y']).to_excel('centroids.xlsx')
 
     def km(self, img, number, g, parametr_p, rz_x):
         x = g[0]
         y = g[1]
-        # for testing
-        pd.DataFrame(img).to_csv('datatest/A1 97_ac.csv', index=False, header=False)
-        np.savetxt('datatest/A1 97_ac_x.txt', x)
-        np.savetxt('datatest/A1 97_ac_y.txt', y)
-
 
         # Если имеется массив центроидов
         if len(x) > 0 and len(y) > 0:
@@ -169,21 +164,22 @@ class Ui(QtWidgets.QMainWindow):
             z = [list(hhh) for hhh in zip(x, y)]
 
             # elbow method
-            model = KMeans()
-            vis = KElbowVisualizer(model, k=(1, 15))
-            vis.fit(np.array(z))
+            # model = KMeans()
+            # vis = KElbowVisualizer(model, k=(1, 15))
+            # vis.fit(np.array(z))
+            #
+            # k = KMeans(n_clusters=vis.elbow_value_).fit(z)
+            af = MeanShift().fit(z)
 
-            k = KMeans(n_clusters=vis.elbow_value_).fit(z)
-
-            arrayp = [[0]] * len(k.cluster_centers_)
+            arrayp = [[0]] * len(af.cluster_centers_)
             for d, c in enumerate(arrayp):
                 kkk = []
-                for i, m in enumerate(k.labels_):
+                for i, m in enumerate(af.labels_):
                     if m == d:
                         kkk.append(z[i])
                 arrayp[d] = np.array(kkk)
 
-            hhhhh = len(k.cluster_centers_)
+            hhhhh = len(af.cluster_centers_)
             DD_vector = []
             for n, aaa in enumerate(arrayp):
                 A_Xmin = min(aaa[:, 0])
@@ -200,22 +196,20 @@ class Ui(QtWidgets.QMainWindow):
                     img[aaa[:, 0], aaa[:, 1]] = 0
                     # hhhhh = hhhhh - 1
 
-            log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(k.cluster_centers_), hhhhh)
+            log.info("img === %s --- centroid === %s ---- cenhhhh ==== %s", DD_vector, len(af.cluster_centers_), hhhhh)
             # self.label_max.text()
             contours = measure.find_contours(img, number)
             # for n, contour in enumerate(contours):
             #     self.axes2.plot(contour[:, 1], contour[:, 0], linewidth=2)
 
             if len(z) > 0:
-                k = KMeans(n_clusters=hhhhh).fit(z)
-
-                x_t = list(k.cluster_centers_[:, 0])
-                y_t = list(k.cluster_centers_[:, 1])
+                x_t = list(af.cluster_centers_[:, 0])
+                y_t = list(af.cluster_centers_[:, 1])
             else:
                 self.label_max.setText('Заданный размер слишком высок')
 
             log.info('Параметр порога - {}'.format(parametr_p))
-            return img, contours, y_t, x_t, parametr_p, mkm_width, caff, k.cluster_centers_
+            return img, contours, y_t, x_t, parametr_p, mkm_width, caff, af.cluster_centers_
         else:
             log.info("Не можем определить центроиды")
 
